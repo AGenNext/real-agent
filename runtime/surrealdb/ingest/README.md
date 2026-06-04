@@ -7,9 +7,17 @@ The key constraint: SurrealDB 3.x does **not** coerce a JSON string like
 converted with `type::record(...)`. Both ingesters below do this for the link
 fields you name.
 
+**Security:** record data is passed to SurrealDB as **bound parameters** (a
+`$rows` array variable over the RPC endpoint), never concatenated into the query
+string. Hostile content in the data cannot alter the statement — verified by
+ingesting a record whose value contained `"]; REMOVE TABLE …` and confirming the
+table was untouched and the string stored verbatim. Only the table and link-field
+names (operator-supplied) appear in the query text, and both are validated as
+identifiers.
+
 ## JSON Lines — `ingest_jsonl.sh` (verified on 3.0.1)
 
-One JSON object per line, batched into `CREATE … CONTENT` statements.
+One JSON object per line, batched and posted as bound `$rows` parameters.
 
 ```sh
 ENDPOINT=http://localhost:8000 USER=root PASS=root NS=real_agent DB=v1 \

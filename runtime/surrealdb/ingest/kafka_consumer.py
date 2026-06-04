@@ -23,15 +23,6 @@ from confluent_kafka import Consumer  # type: ignore
 from surrealdb import Surreal  # type: ignore
 
 
-def link_merge(record: dict, link_fields: list[str]) -> dict:
-    """Convert string record-ids on link fields into SurrealQL record values."""
-    out = dict(record)
-    for f in link_fields:
-        if f in out and isinstance(out[f], str):
-            out[f] = f"r'{out[f]}'"  # record-id literal; passed via query var below
-    return out
-
-
 def main() -> None:
     table = os.environ.get("TABLE", "semantic_memory")
     links = [f for f in os.environ.get("LINKS", "").split(",") if f]
