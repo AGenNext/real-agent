@@ -107,6 +107,58 @@
         "minimum_trust_score": { "type": "number", "minimum": 0, "maximum": 1 }
       },
       "additionalProperties": false
+    },
+    "authority": {
+      "type": "object",
+      "description": "What the agent is permitted to do, distinct from what it is capable of.",
+      "properties": {
+        "allowed_actions": { "type": "array", "items": { "type": "string" } },
+        "denied_actions": { "type": "array", "items": { "type": "string" } },
+        "data_access_scope": { "type": "array", "items": { "type": "string" } },
+        "tool_access_scope": { "type": "array", "items": { "type": "string" } },
+        "financial_limit": { "type": "string" },
+        "operational_limits": { "type": "array", "items": { "type": "string" } },
+        "escalation_requirements": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "security": {
+      "type": "object",
+      "properties": {
+        "authn_required": { "type": "boolean" },
+        "authz_required": { "type": "boolean" },
+        "secret_access": { "type": "array", "items": { "type": "string" } },
+        "data_classification": { "type": "array", "items": { "type": "string" } },
+        "allowed_identity_providers": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "observability": {
+      "type": "object",
+      "properties": {
+        "traces": { "type": "boolean" },
+        "logs": { "type": "boolean" },
+        "metrics": { "type": "boolean" },
+        "audit": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "trust": {
+      "type": "object",
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "state": {
+          "type": "string",
+          "enum": ["unknown", "experimental", "trusted", "conditional", "probation", "suspended", "revoked"]
+        },
+        "identity_trust": { "type": "number", "minimum": 0, "maximum": 1 },
+        "capability_trust": { "type": "number", "minimum": 0, "maximum": 1 },
+        "policy_trust": { "type": "number", "minimum": 0, "maximum": 1 },
+        "behavioral_trust": { "type": "number", "minimum": 0, "maximum": 1 },
+        "operational_trust": { "type": "number", "minimum": 0, "maximum": 1 },
+        "outcome_trust": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

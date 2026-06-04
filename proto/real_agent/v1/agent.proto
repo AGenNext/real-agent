@@ -12,73 +12,10 @@ option go_package = "github.com/AGenNext/real-agent/gen/go/real_agent/v1;realage
 
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "real_agent/v1/common.proto";
 
-// LifecycleState defines the governed operating state of an agent.
-enum LifecycleState {
-  LIFECYCLE_STATE_UNSPECIFIED = 0;
-  LIFECYCLE_STATE_DRAFT = 1;
-  LIFECYCLE_STATE_REGISTERED = 2;
-  LIFECYCLE_STATE_APPROVED = 3;
-  LIFECYCLE_STATE_ACTIVE = 4;
-  LIFECYCLE_STATE_PAUSED = 5;
-  LIFECYCLE_STATE_SUSPENDED = 6;
-  LIFECYCLE_STATE_REVOKED = 7;
-  LIFECYCLE_STATE_RETIRED = 8;
-  LIFECYCLE_STATE_ARCHIVED = 9;
-}
-
-// RiskLevel defines the potential impact of a capability, decision, or action.
-enum RiskLevel {
-  RISK_LEVEL_UNSPECIFIED = 0;
-  RISK_LEVEL_LOW = 1;
-  RISK_LEVEL_MEDIUM = 2;
-  RISK_LEVEL_HIGH = 3;
-  RISK_LEVEL_CRITICAL = 4;
-}
-
-// PolicyDecision defines the result of policy evaluation.
-enum PolicyDecision {
-  POLICY_DECISION_UNSPECIFIED = 0;
-  POLICY_DECISION_ALLOW = 1;
-  POLICY_DECISION_DENY = 2;
-  POLICY_DECISION_REQUIRE_APPROVAL = 3;
-  POLICY_DECISION_REQUIRE_MORE_CONTEXT = 4;
-  POLICY_DECISION_ESCALATE = 5;
-}
-
-// ApprovalStatus defines the approval state for a decision or action.
-enum ApprovalStatus {
-  APPROVAL_STATUS_UNSPECIFIED = 0;
-  APPROVAL_STATUS_NOT_REQUIRED = 1;
-  APPROVAL_STATUS_PENDING = 2;
-  APPROVAL_STATUS_APPROVED = 3;
-  APPROVAL_STATUS_REJECTED = 4;
-  APPROVAL_STATUS_EXPIRED = 5;
-}
-
-// ActionStatus defines the execution status of an action.
-enum ActionStatus {
-  ACTION_STATUS_UNSPECIFIED = 0;
-  ACTION_STATUS_PENDING = 1;
-  ACTION_STATUS_QUEUED = 2;
-  ACTION_STATUS_RUNNING = 3;
-  ACTION_STATUS_COMPLETED = 4;
-  ACTION_STATUS_FAILED = 5;
-  ACTION_STATUS_CANCELLED = 6;
-  ACTION_STATUS_ROLLED_BACK = 7;
-}
-
-// TrustState defines the evaluated trust posture of an agent.
-enum TrustState {
-  TRUST_STATE_UNSPECIFIED = 0;
-  TRUST_STATE_UNKNOWN = 1;
-  TRUST_STATE_EXPERIMENTAL = 2;
-  TRUST_STATE_TRUSTED = 3;
-  TRUST_STATE_CONDITIONAL = 4;
-  TRUST_STATE_PROBATION = 5;
-  TRUST_STATE_SUSPENDED = 6;
-  TRUST_STATE_REVOKED = 7;
-}
+// Shared enums (LifecycleState, RiskLevel, PolicyDecision, ApprovalStatus,
+// ActionStatus, TrustState) are defined once in common.proto and imported here.
 
 // AgentContract is the canonical public contract of a real agent.
 message AgentContract {
@@ -92,6 +29,7 @@ message AgentContract {
   AgentEvaluation evaluation = 8;
   AgentObservability observability = 9;
   AgentTrust trust = 10;
+  AgentAuthority authority = 14;
   map<string, string> labels = 11;
   google.protobuf.Timestamp created_at = 12;
   google.protobuf.Timestamp updated_at = 13;
@@ -128,6 +66,21 @@ message Capability {
   string input_schema_ref = 4;
   string output_schema_ref = 5;
   RiskLevel risk_level = 6;
+}
+
+// AgentAuthority answers: what is the agent allowed to do?
+//
+// Authority is distinct from Capability. Capability is what the agent can do;
+// authority is what it is permitted to do. A capability without authority does
+// not imply permission.
+message AgentAuthority {
+  repeated string allowed_actions = 1;
+  repeated string denied_actions = 2;
+  repeated string data_access_scope = 3;
+  repeated string tool_access_scope = 4;
+  string financial_limit = 5;
+  repeated string operational_limits = 6;
+  repeated string escalation_requirements = 7;
 }
 
 // AgentAction declares an action the agent may request or perform.

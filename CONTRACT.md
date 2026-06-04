@@ -54,6 +54,15 @@ capabilities:
     output_schema: string
     risk_level: low | medium | high | critical
 
+authority:
+  allowed_actions: []
+  denied_actions: []
+  data_access_scope: []
+  tool_access_scope: []
+  financial_limit: string
+  operational_limits: []
+  escalation_requirements: []
+
 inputs:
   - type: string
     source: string

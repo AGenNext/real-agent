@@ -76,21 +76,22 @@ Every pass through the loop must produce a decision record.
 .
 ├── README.md
 ├── SPEC.md
+├── ONTOLOGY.md
 ├── CONTRACT.md
 ├── GOVERNANCE.md
 ├── LIFECYCLE.md
-├── SECURITY.md
-├── schemas/
-│   ├── agent.schema.json
-│   ├── decision.schema.json
-│   └── action.schema.json
-├── examples/
-│   ├── minimal-agent.json
-│   └── enterprise-agent.json
-└── docs/
-    ├── architecture.md
-    ├── glossary.md
-    └── evaluation.md
+├── TRUST.md
+├── LICENSE
+├── buf.yaml
+├── buf.gen.yaml
+├── proto/
+│   └── real_agent/v1/
+│       ├── agent.proto
+│       └── common.proto
+└── schemas/
+    ├── agent.schema.json
+    ├── decision.schema.json
+    └── action.schema.json
 ```
 
 ## Status
