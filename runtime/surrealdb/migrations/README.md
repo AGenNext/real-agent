@@ -17,6 +17,9 @@ ENDPOINT=http://localhost:8000 USER=root PASS=root NS=real_agent DB=v1 \
   ./migrate.sh
 ```
 
+Requires `surreal` and `jq` on PATH. Applied versions are checked by exact
+record-id membership, so re-running never re-applies.
+
 ## Add a migration
 
 Create the next number and describe the change:

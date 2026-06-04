@@ -35,7 +35,10 @@ DEFINE ACCESS owner ON DATABASE TYPE RECORD
 DEFINE TABLE owner SCHEMAFULL;
 DEFINE FIELD email ON owner TYPE string ASSERT string::is_email($value);
 DEFINE FIELD name  ON owner TYPE string;
-DEFINE FIELD pass  ON owner TYPE string PERMISSIONS FOR select NONE;
+-- Credentials are optional: an owner is an accountability record. Human logins
+-- are created through the ACCESS SIGNUP flow (which sets an argon2 hash), not
+-- baked into seed data. Never select the hash.
+DEFINE FIELD pass  ON owner TYPE option<string> PERMISSIONS FOR select NONE;
 DEFINE INDEX owner_email ON owner FIELDS email UNIQUE;
 
 -- ---------------------------------------------------------------------------
@@ -127,6 +130,7 @@ DEFINE FIELD policy_result.decision ON decision TYPE string
   ASSERT $value IN ['allow','deny','require_approval','require_more_context','escalate'];
 DEFINE FIELD approval_result   ON decision TYPE option<object> FLEXIBLE;
 DEFINE FIELD expected_outcome  ON decision TYPE option<string>;
+DEFINE INDEX decision_agent ON decision FIELDS agent, timestamp;
 
 -- ---------------------------------------------------------------------------
 -- action: the boundary between internal reasoning and external consequence
@@ -147,6 +151,8 @@ DEFINE FIELD reversible         ON action TYPE bool DEFAULT false;
 DEFINE FIELD rollback_reference ON action TYPE option<string>;
 DEFINE FIELD started_at         ON action TYPE option<datetime>;
 DEFINE FIELD completed_at       ON action TYPE option<datetime>;
+DEFINE INDEX action_agent    ON action FIELDS agent;
+DEFINE INDEX action_decision ON action FIELDS decision;
 
 -- ---------------------------------------------------------------------------
 -- outcome + evaluation
@@ -167,6 +173,7 @@ DEFINE FIELD trust_score       ON evaluation TYPE number ASSERT $value >= 0 AND 
 DEFINE FIELD policy_compliance ON evaluation TYPE option<number>;
 DEFINE FIELD evidence_refs     ON evaluation TYPE option<array<string>>;
 DEFINE FIELD evaluated_at      ON evaluation TYPE datetime DEFAULT time::now() READONLY;
+DEFINE INDEX evaluation_agent ON evaluation FIELDS agent, evaluated_at;
 
 -- ---------------------------------------------------------------------------
 -- event: append-only audit log (derived-state principle)

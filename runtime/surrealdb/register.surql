@@ -9,8 +9,9 @@
 
 BEGIN TRANSACTION;
 
--- The accountable human/organizational owner.
-CREATE owner:acme SET email = 'ops@acme.example', name = 'Acme Platform Ops', pass = crypto::argon2::generate('change-me');
+-- The accountable human/organizational owner. No credential is seeded here;
+-- human logins are created via the ACCESS SIGNUP flow defined in schema.surql.
+CREATE owner:acme SET email = 'ops@acme.example', name = 'Acme Platform Ops';
 
 -- The agent contract.
 CREATE agent:backup_steward SET

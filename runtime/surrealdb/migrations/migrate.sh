@@ -19,6 +19,8 @@ NS="${NS:-real_agent}"
 DB="${DB:-v1}"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+command -v jq >/dev/null || { echo "error: jq is required" >&2; exit 2; }
+
 run_sql() {
   surreal sql --endpoint "$ENDPOINT" --user "$USER" --pass "$PASS" --ns "$NS" --db "$DB" --json <<<"$1"
 }
@@ -27,12 +29,14 @@ run_sql() {
 run_sql "DEFINE TABLE IF NOT EXISTS _migration SCHEMAFULL;
          DEFINE FIELD IF NOT EXISTS applied_at ON _migration TYPE datetime DEFAULT time::now() READONLY;" >/dev/null
 
+# Applied versions as a JSON array of record-id strings (exact membership test
+# below — no fragile substring matching).
 applied="$(run_sql 'SELECT VALUE id FROM _migration;')"
 
 for f in "$DIR"/[0-9]*.surql; do
   [ -e "$f" ] || continue
   version="$(basename "$f" .surql)"
-  if echo "$applied" | grep -q "_migration:.\?${version}"; then
+  if jq -e --arg id "_migration:$version" 'flatten | index($id) != null' >/dev/null 2>&1 <<<"$applied"; then
     echo "skip   $version (already applied)"
     continue
   fi
