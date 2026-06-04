@@ -94,10 +94,11 @@ policy:
   deny_by_default: boolean
 
 security:
-  authn_required: boolean
-  authz_required: boolean
-  secret_access: []
-  data_classification: []
+  authentication_required: boolean
+  authorization_required: boolean
+  secret_refs: []
+  data_classifications: []
+  allowed_identity_providers: []
 
 evaluation:
   metrics: []

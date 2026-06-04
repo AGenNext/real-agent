@@ -66,9 +66,9 @@ DEFINE FIELD objective.constraints      ON agent TYPE option<array<string>>;
 
 -- Capability = what the agent CAN do.
 DEFINE FIELD capabilities             ON agent TYPE array<object>;
-DEFINE FIELD capabilities[*].id        ON agent TYPE string;
-DEFINE FIELD capabilities[*].name      ON agent TYPE string;
-DEFINE FIELD capabilities[*].risk_level ON agent TYPE string
+DEFINE FIELD capabilities.*.id        ON agent TYPE string;
+DEFINE FIELD capabilities.*.name      ON agent TYPE string;
+DEFINE FIELD capabilities.*.risk_level ON agent TYPE string
   ASSERT $value IN ['low','medium','high','critical'];
 
 -- Authority = what the agent is ALLOWED to do (distinct from capability).

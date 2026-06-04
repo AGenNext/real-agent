@@ -159,10 +159,10 @@
     "security": {
       "type": "object",
       "properties": {
-        "authn_required": { "type": "boolean" },
-        "authz_required": { "type": "boolean" },
-        "secret_access": { "type": "array", "items": { "type": "string" } },
-        "data_classification": { "type": "array", "items": { "type": "string" } },
+        "authentication_required": { "type": "boolean" },
+        "authorization_required": { "type": "boolean" },
+        "secret_refs": { "type": "array", "items": { "type": "string" } },
+        "data_classifications": { "type": "array", "items": { "type": "string" } },
         "allowed_identity_providers": { "type": "array", "items": { "type": "string" } }
       },
       "additionalProperties": false
