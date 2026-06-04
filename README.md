@@ -98,6 +98,10 @@ Every pass through the loop must produce a decision record.
         ├── tools.surql
         ├── memory.surql
         ├── register.surql
+        ├── migrations/
+        │   ├── 0001_agent_tags.surql
+        │   ├── migrate.sh
+        │   └── README.md
         └── README.md
 ```
 

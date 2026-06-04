@@ -29,6 +29,7 @@ maps directly onto SurrealDB's feature set — the agent graph *is* a SurrealDB 
 | `tools.surql` | Graph edge tables + SurrealDB CLI tooling registered as `tool` records |
 | `memory.surql` | Memory primitive: semantic (vector + full-text), episodic (change feed), procedural, working |
 | `register.surql` | Example `RegisterAgent` flow (owner → contract → authority → audit) |
+| `migrations/` | Versioned, idempotent schema evolution + runner (`migrate.sh`) |
 
 ## Apply
 
