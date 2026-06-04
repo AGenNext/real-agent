@@ -34,6 +34,7 @@ maps directly onto SurrealDB's feature set — the agent graph *is* a SurrealDB 
 | `memory.surql` | Memory primitive: semantic (vector + full-text), episodic (change feed), procedural, working |
 | `register.surql` | Example `RegisterAgent` flow (owner → contract → authority → audit) |
 | `functions.surql` | Governance functions (`fn::can_invoke`, `fn::needs_approval`, `fn::trust_score`) + `agent_activity` derived table |
+| `ingest/` | Bulk/stream ingestion: JSONL loader (`ingest_jsonl.sh`) + Kafka consumer pattern |
 | `migrations/` | Versioned, idempotent schema evolution + runner (`migrate.sh`) |
 
 ## Apply

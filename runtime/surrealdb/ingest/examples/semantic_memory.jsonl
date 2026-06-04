@@ -1,0 +1,3 @@
+{ "agent": "agent:backup_steward", "content": "Nightly export of the billing database completed without errors", "classification": "internal", "source": "ops-log" }
+{ "agent": "agent:backup_steward", "content": "Restore drill recovered the analytics cluster in 4 minutes", "classification": "internal", "source": "ops-log" }
+{ "agent": "agent:backup_steward", "content": "Retention policy requires 30 days of point-in-time recovery", "classification": "confidential", "source": "policy" }
