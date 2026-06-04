@@ -145,6 +145,8 @@ pub struct Agent {
     pub authority: Authority,
     /// Deny-by-default governance: an action is allowed only if explicitly authorized.
     pub deny_by_default: bool,
+    /// Security posture (authn/authz, allowed identity providers, classification).
+    pub security: crate::security::Security,
     pub trust: Trust,
 }
 

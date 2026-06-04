@@ -9,6 +9,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::memory::*;
 use crate::model::*;
+use crate::security::{Principal, Security};
 use crate::store::Store;
 
 /// Trust at or below this score suspends an active agent.
@@ -30,6 +31,8 @@ pub enum RuntimeError {
     PolicyDenied(String),
     /// Action requires approval that has not been granted.
     ApprovalRequired(String),
+    /// The acting principal failed the agent's security posture.
+    SecurityDenied(&'static str),
 }
 
 impl fmt::Display for RuntimeError {
@@ -47,6 +50,7 @@ impl fmt::Display for RuntimeError {
             NotAuthorized(t) => write!(f, "agent not authorized for tool: {t}"),
             PolicyDenied(t) => write!(f, "policy denied action on tool: {t}"),
             ApprovalRequired(t) => write!(f, "approval required for tool: {t}"),
+            SecurityDenied(why) => write!(f, "security denied: {why}"),
         }
     }
 }
@@ -135,6 +139,7 @@ impl<S: Store> Runtime<S> {
             capabilities,
             authority,
             deny_by_default: true,
+            security: Security::default(),
             trust: Trust::default(),
         };
         let id = agent.identity.id.clone();
@@ -177,6 +182,14 @@ impl<S: Store> Runtime<S> {
         if !agent.authority.allowed_tools.iter().any(|t| t == tool_id) {
             agent.authority.allowed_tools.push(tool_id.to_string());
         }
+        self.store.put_agent(agent);
+        Ok(())
+    }
+
+    /// Set the agent's security posture (authn/authz, allowed identity providers).
+    pub fn set_security(&mut self, agent_id: &str, security: Security) -> Result<()> {
+        let mut agent = self.agent(agent_id)?;
+        agent.security = security;
         self.store.put_agent(agent);
         Ok(())
     }
@@ -233,10 +246,21 @@ impl<S: Store> Runtime<S> {
         Ok(decision)
     }
 
-    /// Request an action arising from a decision. Enforces: agent Active,
-    /// authority (capability is not permission), deny-by-default policy, and
-    /// approval gating. Authorized actions are not yet executed.
+    /// Request an action arising from a decision, as an anonymous principal.
     pub fn request_action(&mut self, decision_id: &str, tool_id: &str) -> Result<Action> {
+        self.request_action_as(decision_id, tool_id, &Principal::anonymous())
+    }
+
+    /// Request an action on behalf of `principal`. Enforces, in order: agent
+    /// Active, the agent's security posture (authn/authz), authority (capability
+    /// is not permission), deny-by-default policy, and approval gating.
+    /// Authorized actions are recorded but not yet executed.
+    pub fn request_action_as(
+        &mut self,
+        decision_id: &str,
+        tool_id: &str,
+        principal: &Principal,
+    ) -> Result<Action> {
         let decision = self
             .store
             .get_decision(decision_id)
@@ -246,6 +270,8 @@ impl<S: Store> Runtime<S> {
         if agent.lifecycle_state != LifecycleState::Active {
             return Err(RuntimeError::NotActive(agent.lifecycle_state));
         }
+        // Security is core: the principal must satisfy the agent's posture.
+        agent.security.check(principal).map_err(RuntimeError::SecurityDenied)?;
         let tool = self
             .store
             .get_tool(tool_id)

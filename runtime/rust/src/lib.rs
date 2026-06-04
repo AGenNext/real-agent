@@ -18,6 +18,7 @@
 pub mod memory;
 pub mod model;
 pub mod runtime;
+pub mod security;
 pub mod store;
 
 pub use memory::{
@@ -25,4 +26,5 @@ pub use memory::{
 };
 pub use model::*;
 pub use runtime::{Runtime, RuntimeError, SUSPEND_THRESHOLD};
+pub use security::{Principal, Security};
 pub use store::{MemoryStore, Store};
