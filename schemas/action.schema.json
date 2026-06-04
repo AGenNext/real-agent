@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://real-agent.dev/schemas/action.schema.json",
+  "title": "Real Agent Action",
+  "description": "Canonical schema for a real agent action record.",
+  "type": "object",
+  "required": [
+    "id",
+    "decision_id",
+    "agent_id",
+    "action_type",
+    "target",
+    "authorization",
+    "status"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "decision_id": { "type": "string" },
+    "agent_id": { "type": "string" },
+    "action_type": { "type": "string" },
+    "target": { "type": "string" },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "authorization": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["authorized", "denied", "approval_required"]
+        },
+        "policy_ref": { "type": "string" },
+        "approver": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "queued",
+        "running",
+        "completed",
+        "failed",
+        "cancelled",
+        "rolled_back"
+      ]
+    },
+    "reversible": { "type": "boolean" },
+    "rollback_reference": { "type": "string" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}
