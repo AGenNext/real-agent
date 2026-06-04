@@ -14,6 +14,28 @@
 //! and enforces the governance the spec requires: a governed lifecycle,
 //! authority distinct from capability, deny-by-default policy, approval gates,
 //! trust-driven suspension, and an append-only audit log.
+//!
+//! # The twelve primitives (one real-world model)
+//!
+//! The core reflects the canonical ontology in full — no more, no less:
+//!
+//! | Primitive  | In the core |
+//! |------------|-------------|
+//! | Identity   | [`Identity`] on every [`Agent`] |
+//! | Authority  | [`Authority`] — what the agent is *allowed* to do |
+//! | Objective  | [`Objective`] |
+//! | Context    | [`ContextItem`] via `Runtime::observe` |
+//! | Decision   | [`Decision`] (grounded in `context_refs`) |
+//! | Action     | [`Action`] (authorized, gated, then executed) |
+//! | Outcome    | [`Outcome`] |
+//! | Memory     | [`memory`] — semantic, episodic, procedural, working |
+//! | Policy     | [`PolicyResult`] + deny-by-default on the [`Agent`] |
+//! | Trust      | [`Trust`] / [`TrustState`], updated by evaluation |
+//! | Evaluation | [`Evaluation`] |
+//! | Governance | the [`Runtime`] engine + immutable [`Event`] log |
+//!
+//! Security ([`security`]) is treated as core alongside governance, not as an
+//! adapter.
 
 pub mod context;
 pub mod memory;
