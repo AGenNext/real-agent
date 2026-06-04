@@ -1,0 +1,36 @@
+---
+description: Vector and full-text index/query patterns in SurrealQL
+globs: ["runtime/surrealdb/**/*.surql", "**/*.surql"]
+alwaysApply: false
+---
+
+# Vector indexes, full-text, and change feeds
+
+Verified against `runtime/surrealdb/memory.surql` on SurrealDB 2.3.7.
+
+## Vector (semantic) search
+- Store embeddings as `array<float>`.
+- Define an MTREE index sized to your embedder:
+  `DEFINE INDEX semantic_vec ON semantic_memory FIELDS embedding MTREE DIMENSION 384 DIST COSINE;`
+- K-nearest-neighbour query with the knn operator:
+  `SELECT id, content FROM semantic_memory WHERE embedding <|5,COSINE|> $q;`
+- Or score with a vector function:
+  `SELECT content, vector::similarity::cosine(embedding, $q) AS score FROM semantic_memory ORDER BY score DESC;`
+- Keep `DIMENSION` consistent with the model that produced `$q`.
+
+## Full-text search
+- Define an analyzer, then a SEARCH index:
+  ```
+  DEFINE ANALYZER doc TOKENIZERS blank,class FILTERS lowercase,ascii;
+  DEFINE INDEX semantic_text ON semantic_memory FIELDS content SEARCH ANALYZER doc BM25 HIGHLIGHTS;
+  ```
+- Match with the `@@` operator; use a reference number to score/highlight:
+  `SELECT content, search::score(1) AS score FROM semantic_memory WHERE content @1@ 'restore cluster' ORDER BY score DESC;`
+
+## Change feeds (episodic / time-travel)
+- `DEFINE TABLE episodic_memory SCHEMAFULL CHANGEFEED 30d;`
+- Read historical versions with `VERSION` or inspect changes with `SHOW CHANGES FOR TABLE ...`.
+
+## Hybrid retrieval
+- SurrealQL lets you combine graph traversal, vector similarity, and filters in
+  one statement — prefer a single round trip over stitching multiple queries.

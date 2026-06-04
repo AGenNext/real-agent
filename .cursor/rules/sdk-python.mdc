@@ -1,0 +1,24 @@
+---
+description: SurrealDB Python SDK usage
+globs: ["**/*.py"]
+alwaysApply: false
+---
+
+# SurrealDB Python SDK
+
+- Use the official `surrealdb` package. It exposes both sync (`Surreal`) and
+  async (`AsyncSurreal`) clients — pick one and stay consistent.
+- Connect, select namespace/database, sign in, then query:
+  ```python
+  from surrealdb import AsyncSurreal
+
+  async with AsyncSurreal("ws://127.0.0.1:8000/rpc") as db:
+      await db.signin({"username": "root", "password": "root"})
+      await db.use("real_agent", "v1")
+      agents = await db.query("SELECT * FROM agent WHERE tenant = $t", {"t": "acme"})
+  ```
+- Pass query variables as the params dict; do not f-string untrusted values into
+  SurrealQL.
+- Prefer the context manager (`async with`) so the connection closes cleanly.
+- For embeddings, send vectors as plain lists of floats; keep their length equal
+  to the `DIMENSION` of the target MTREE index.
