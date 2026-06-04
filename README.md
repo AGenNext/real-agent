@@ -93,6 +93,11 @@ Every pass through the loop must produce a decision record.
 │   ├── decision.schema.json
 │   └── action.schema.json
 └── runtime/
+    ├── rust/                      # vendor-neutral, zero-dependency runtime core
+    │   ├── src/{lib,model,store,runtime}.rs
+    │   ├── examples/agent_loop.rs
+    │   ├── tests/runtime.rs
+    │   └── Cargo.toml
     └── surrealdb/
         ├── bootstrap.surql
         ├── schema.surql

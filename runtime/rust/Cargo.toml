@@ -1,0 +1,16 @@
+[package]
+name = "real-agent-runtime"
+version = "0.1.0"
+edition = "2021"
+description = "Pure-Rust, vendor-neutral runtime core for the Real Agent contract: identity, authority, decision, action, outcome, trust, and governance."
+license = "CC-BY-4.0"
+repository = "https://github.com/AGenNext/real-agent"
+
+# Zero third-party dependencies by design — no SBOM/supply-chain surface in the
+# core. Storage backends (e.g. a SurrealDB adapter) and serialization live in
+# separate adapter crates behind the `Store` trait, not here.
+[dependencies]
+
+[lib]
+name = "real_agent_runtime"
+path = "src/lib.rs"
