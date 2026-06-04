@@ -80,4 +80,10 @@ DEFINE FIELD at       ON episodic_memory TYPE datetime DEFAULT time::now() READO
 -- Semantic recall:
 --   SELECT content, vector::similarity::cosine(embedding, $q) AS score
 --     FROM semantic_memory WHERE embedding <|5,COSINE|> $q;
+-- Hybrid recall (RAG) — fuse vector + full-text with reciprocal rank fusion
+-- (verified on 3.0.1):
+--   LET $vs = (SELECT id FROM semantic_memory WHERE embedding <|5|> $q);
+--   LET $ft = (SELECT id, search::score(1) AS score
+--                FROM semantic_memory WHERE content @1@ $text ORDER BY score DESC LIMIT 5);
+--   search::rrf([$vs, $ft], 5, 60);
 -- ---------------------------------------------------------------------------
