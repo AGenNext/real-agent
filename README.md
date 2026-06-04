@@ -94,10 +94,12 @@ Every pass through the loop must produce a decision record.
 │   └── action.schema.json
 └── runtime/
     └── surrealdb/
+        ├── bootstrap.surql
         ├── schema.surql
         ├── tools.surql
         ├── memory.surql
         ├── register.surql
+        ├── functions.surql
         ├── migrations/
         │   ├── 0001_agent_tags.surql
         │   ├── migrate.sh
