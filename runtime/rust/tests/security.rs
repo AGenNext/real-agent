@@ -38,6 +38,7 @@ fn decide(rt: &mut Runtime<MemoryStore>, agent_id: &str) -> String {
         agent_id,
         "o",
         vec![],
+        vec![],
         "s",
         "r",
         0.9,

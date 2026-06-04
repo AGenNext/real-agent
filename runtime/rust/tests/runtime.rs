@@ -81,7 +81,7 @@ fn deny_by_default_blocks_ungranted_tool() {
     rt.transition("agent:a", LifecycleState::Approved).unwrap();
     rt.transition("agent:a", LifecycleState::Active).unwrap();
     let d = rt
-        .record_decision("agent:a", "obj", vec![], "alt", "why", 0.9, policy_allow())
+        .record_decision("agent:a", "obj", vec![], vec![], "alt", "why", 0.9, policy_allow())
         .unwrap();
     // Tool not granted -> deny-by-default denies it.
     assert_eq!(
@@ -94,7 +94,7 @@ fn deny_by_default_blocks_ungranted_tool() {
 fn happy_path_decide_act_execute_outcome() {
     let (mut rt, id, tool_id) = active_agent_with_tool(false);
     let d = rt
-        .record_decision(&id, "back up db", vec![], "export", "nightly", 0.95, policy_allow())
+        .record_decision(&id, "back up db", vec![], vec![], "export", "nightly", 0.95, policy_allow())
         .unwrap();
     let action = rt.request_action(&d.id, &tool_id).unwrap();
     assert_eq!(action.authorization, ApprovalStatus::NotRequired);
@@ -108,7 +108,7 @@ fn happy_path_decide_act_execute_outcome() {
 fn approval_gate_blocks_execution_until_approved() {
     let (mut rt, id, tool_id) = active_agent_with_tool(true); // approval required
     let d = rt
-        .record_decision(&id, "restore", vec![], "import", "drill", 0.8, policy_allow())
+        .record_decision(&id, "restore", vec![], vec![], "import", "drill", 0.8, policy_allow())
         .unwrap();
     let action = rt.request_action(&d.id, &tool_id).unwrap();
     assert_eq!(action.authorization, ApprovalStatus::Pending);
@@ -128,7 +128,7 @@ fn inactive_agent_cannot_decide() {
     rt.register_agent(identity("agent:a"), Objective::default(), vec![], Authority::default());
     // Still Registered, not Active.
     assert!(matches!(
-        rt.record_decision("agent:a", "o", vec![], "s", "r", 0.5, policy_allow()),
+        rt.record_decision("agent:a", "o", vec![], vec![], "s", "r", 0.5, policy_allow()),
         Err(RuntimeError::NotActive(LifecycleState::Registered))
     ));
 }
@@ -153,7 +153,7 @@ fn good_trust_keeps_agent_active() {
 fn audit_log_captures_the_loop() {
     let (mut rt, id, tool_id) = active_agent_with_tool(false);
     let d = rt
-        .record_decision(&id, "o", vec![], "s", "r", 0.9, policy_allow())
+        .record_decision(&id, "o", vec![], vec![], "s", "r", 0.9, policy_allow())
         .unwrap();
     let a = rt.request_action(&d.id, &tool_id).unwrap();
     rt.execute_action(&a.id).unwrap();

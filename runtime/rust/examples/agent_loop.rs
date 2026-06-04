@@ -38,10 +38,12 @@ fn main() {
     rt.grant_tool(&id, "tool:export").unwrap();
 
     // Observe -> Decide -> Authorize -> Act -> Evaluate -> Remember.
+    let ctx = rt.observe(&id, "scheduler", "nightly backup window open, billing db idle").unwrap();
     let decision = rt
         .record_decision(
             &id,
             "Back up the billing database",
+            vec![ctx.id.clone()],
             vec![DecisionAlternative {
                 id: "alt.export".into(),
                 description: "Run a SurrealQL export".into(),

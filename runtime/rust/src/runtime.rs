@@ -7,6 +7,7 @@ use std::error::Error;
 use std::fmt;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use crate::context::ContextItem;
 use crate::memory::*;
 use crate::model::*;
 use crate::security::{Principal, Security};
@@ -214,11 +215,32 @@ impl<S: Store> Runtime<S> {
         Ok(tool.approval_required)
     }
 
-    /// Record a decision. Requires the agent to be Active.
+    /// Observe a piece of context (the "Observe" step). Traceable to its source.
+    pub fn observe(&mut self, agent_id: &str, source: &str, content: &str) -> Result<ContextItem> {
+        let _ = self.agent(agent_id)?;
+        let id = self.next_id("context");
+        let item = ContextItem {
+            id,
+            agent_id: agent_id.to_string(),
+            source: source.to_string(),
+            content: content.to_string(),
+            observed_at: self.now(),
+        };
+        self.store.put_context(item.clone());
+        Ok(item)
+    }
+
+    /// The agent's observed context.
+    pub fn context(&self, agent_id: &str) -> Vec<ContextItem> {
+        self.store.context_for(agent_id)
+    }
+
+    /// Record a decision grounded in observed context. Requires the agent Active.
     pub fn record_decision(
         &mut self,
         agent_id: &str,
         objective: &str,
+        context_refs: Vec<String>,
         alternatives: Vec<DecisionAlternative>,
         selected: &str,
         reasoning: &str,
@@ -235,6 +257,7 @@ impl<S: Store> Runtime<S> {
             agent_id: agent_id.to_string(),
             timestamp: self.now(),
             objective: objective.to_string(),
+            context_refs,
             alternatives,
             selected: selected.to_string(),
             reasoning_summary: reasoning.to_string(),

@@ -169,6 +169,8 @@ pub struct Decision {
     pub agent_id: String,
     pub timestamp: Millis,
     pub objective: String,
+    /// Ids of the `ContextItem`s this decision was grounded in.
+    pub context_refs: Vec<String>,
     pub alternatives: Vec<DecisionAlternative>,
     pub selected: String,
     pub reasoning_summary: String,

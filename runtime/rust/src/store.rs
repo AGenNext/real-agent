@@ -6,6 +6,7 @@
 
 use std::collections::HashMap;
 
+use crate::context::ContextItem;
 use crate::memory::{ProceduralRecord, SemanticRecord, WorkingMemory};
 use crate::model::*;
 
@@ -27,6 +28,9 @@ pub trait Store {
     fn get_outcomes(&self, action_id: &str) -> Vec<Outcome>;
 
     fn put_evaluation(&mut self, evaluation: Evaluation);
+
+    fn put_context(&mut self, item: ContextItem);
+    fn context_for(&self, agent_id: &str) -> Vec<ContextItem>;
 
     // Memory primitive.
     fn put_semantic(&mut self, record: SemanticRecord);
@@ -54,6 +58,7 @@ pub struct MemoryStore {
     semantic: Vec<SemanticRecord>,
     procedural: Vec<ProceduralRecord>,
     working: HashMap<(String, String), WorkingMemory>,
+    context: Vec<ContextItem>,
     events: Vec<Event>,
 }
 
@@ -120,6 +125,13 @@ impl Store for MemoryStore {
     }
     fn get_working(&self, agent_id: &str, task: &str) -> Option<WorkingMemory> {
         self.working.get(&(agent_id.to_string(), task.to_string())).cloned()
+    }
+
+    fn put_context(&mut self, item: ContextItem) {
+        self.context.push(item);
+    }
+    fn context_for(&self, agent_id: &str) -> Vec<ContextItem> {
+        self.context.iter().filter(|c| c.agent_id == agent_id).cloned().collect()
     }
 
     fn append_event(&mut self, event: Event) {
