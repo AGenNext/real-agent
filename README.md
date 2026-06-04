@@ -100,14 +100,8 @@ Every pass through the loop must produce a decision record.
         ├── memory.surql
         ├── register.surql
         ├── functions.surql
-        ├── ingest/
-        │   ├── ingest_jsonl.sh
-        │   ├── kafka_consumer.py
-        │   ├── examples/semantic_memory.jsonl
-        │   └── README.md
         ├── migrations/
         │   ├── 0001_agent_tags.surql
-        │   ├── migrate.sh
         │   └── README.md
         └── README.md
 ```

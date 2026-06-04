@@ -1,32 +1,24 @@
 # Migrations
 
-Versioned, idempotent schema evolution for the Real Agent SurrealDB runtime.
+Ordered, idempotent schema evolution for the SurrealDB runtime — applied with
+the native `surreal import`, no extra tooling.
 
 ## How it works
 
 - Each migration is a numbered file: `NNNN_description.surql`.
-- `migrate.sh` applies pending migrations in filename order, exactly once each,
-  recording applied versions in a `_migration` table.
-- Re-running is safe: already-applied migrations are skipped. Write migration
-  bodies idempotently too (`DEFINE … IF NOT EXISTS`, additive changes).
-
-## Run
+- Write bodies idempotently (`DEFINE … IF NOT EXISTS`, additive changes) so
+  re-importing is always safe.
+- Apply in filename order:
 
 ```sh
-ENDPOINT=http://localhost:8000 USER=root PASS=root NS=real_agent DB=v1 \
-  ./migrate.sh
+for m in runtime/surrealdb/migrations/[0-9]*.surql; do
+  surreal import --endpoint http://localhost:8000 --user root --pass root \
+    --ns real_agent --db v1 "$m"
+done
 ```
-
-Requires `surreal` and `jq` on PATH. Applied versions are checked by exact
-record-id membership, so re-running never re-applies.
 
 ## Add a migration
 
-Create the next number and describe the change:
-
-```
-0002_add_cost_budget.surql
-```
-
-Keep migrations forward-only and additive where possible; the append-only
-event log and change feeds preserve history regardless.
+Create the next number and describe the change, e.g. `0002_add_cost_budget.surql`.
+Keep migrations forward-only and additive; the append-only event log and change
+feeds preserve history regardless.

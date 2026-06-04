@@ -34,8 +34,7 @@ maps directly onto SurrealDB's feature set — the agent graph *is* a SurrealDB 
 | `memory.surql` | Memory primitive: semantic (vector + full-text), episodic (change feed), procedural, working |
 | `register.surql` | Example `RegisterAgent` flow (owner → contract → authority → audit) |
 | `functions.surql` | Governance functions (`fn::can_invoke`, `fn::needs_approval`, `fn::trust_score`) + `agent_activity` derived table |
-| `ingest/` | Bulk/stream ingestion: JSONL loader (`ingest_jsonl.sh`) + Kafka consumer pattern |
-| `migrations/` | Versioned, idempotent schema evolution + runner (`migrate.sh`) |
+| `migrations/` | Ordered, idempotent SurrealQL migrations applied with native `surreal import` |
 
 ## Apply
 
@@ -59,11 +58,21 @@ operations are gated):
 - `start_instance` — start an instance or cluster (medium risk, approval required)
 - `ide_language_support`, `language_server` — developer-time SurrealQL aids
 
+## Ingestion
+
+Use the native interfaces — no extra tooling layer:
+
+- bulk SurrealQL: `surreal import` (the same command used to apply this runtime);
+- application data: the official SurrealDB SDKs, passing records as **bound
+  query parameters** (never string-concatenated into SurrealQL). For a
+  `record<>` link field, convert the id with `type::record($value)`.
+
 ## Status
 
-Reference runtime, version 0.1.0. SurrealQL targets **SurrealDB 3.x** and is
-verified end-to-end on 3.0.1 (all four files import; graph traversal, HNSW
-vector KNN, BM25 full-text, change feeds, migrations, and audit triggers all
-exercised). No UI is included — pair with SurrealDB's own
-[Surrealist](https://surrealdb.com/surrealist) for table views, querying, and
-graph visualisation, or build a dedicated console.
+Reference runtime, version 0.1.0. SurrealQL targets **SurrealDB 3.x**, verified
+end-to-end on 3.0.1: all six files import; graph traversal, HNSW vector KNN,
+BM25 full-text (and `search::rrf` hybrid), change feeds, governance functions,
+the `agent_activity` computed view, and audit triggers all exercised. Migrations
+are ordered idempotent SurrealQL applied with `surreal import`. No UI is included
+— pair with SurrealDB's own [Surrealist](https://surrealdb.com/surrealist), or
+build a dedicated console.
