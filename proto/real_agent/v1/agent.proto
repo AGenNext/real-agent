@@ -1,0 +1,342 @@
+syntax = "proto3";
+
+package real_agent.v1;
+
+option go_package = "github.com/AGenNext/real-agent/gen/go/real_agent/v1;realagentv1";
+
+// Real Agent Protocol
+//
+// This proto defines the canonical machine-readable contract for a Real Agent.
+// A Real Agent is an accountable system that observes, decides, acts, remembers,
+// and operates under identity, authority, policy, trust, evaluation, and governance.
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// LifecycleState defines the governed operating state of an agent.
+enum LifecycleState {
+  LIFECYCLE_STATE_UNSPECIFIED = 0;
+  LIFECYCLE_STATE_DRAFT = 1;
+  LIFECYCLE_STATE_REGISTERED = 2;
+  LIFECYCLE_STATE_APPROVED = 3;
+  LIFECYCLE_STATE_ACTIVE = 4;
+  LIFECYCLE_STATE_PAUSED = 5;
+  LIFECYCLE_STATE_SUSPENDED = 6;
+  LIFECYCLE_STATE_REVOKED = 7;
+  LIFECYCLE_STATE_RETIRED = 8;
+  LIFECYCLE_STATE_ARCHIVED = 9;
+}
+
+// RiskLevel defines the potential impact of a capability, decision, or action.
+enum RiskLevel {
+  RISK_LEVEL_UNSPECIFIED = 0;
+  RISK_LEVEL_LOW = 1;
+  RISK_LEVEL_MEDIUM = 2;
+  RISK_LEVEL_HIGH = 3;
+  RISK_LEVEL_CRITICAL = 4;
+}
+
+// PolicyDecision defines the result of policy evaluation.
+enum PolicyDecision {
+  POLICY_DECISION_UNSPECIFIED = 0;
+  POLICY_DECISION_ALLOW = 1;
+  POLICY_DECISION_DENY = 2;
+  POLICY_DECISION_REQUIRE_APPROVAL = 3;
+  POLICY_DECISION_REQUIRE_MORE_CONTEXT = 4;
+  POLICY_DECISION_ESCALATE = 5;
+}
+
+// ApprovalStatus defines the approval state for a decision or action.
+enum ApprovalStatus {
+  APPROVAL_STATUS_UNSPECIFIED = 0;
+  APPROVAL_STATUS_NOT_REQUIRED = 1;
+  APPROVAL_STATUS_PENDING = 2;
+  APPROVAL_STATUS_APPROVED = 3;
+  APPROVAL_STATUS_REJECTED = 4;
+  APPROVAL_STATUS_EXPIRED = 5;
+}
+
+// ActionStatus defines the execution status of an action.
+enum ActionStatus {
+  ACTION_STATUS_UNSPECIFIED = 0;
+  ACTION_STATUS_PENDING = 1;
+  ACTION_STATUS_QUEUED = 2;
+  ACTION_STATUS_RUNNING = 3;
+  ACTION_STATUS_COMPLETED = 4;
+  ACTION_STATUS_FAILED = 5;
+  ACTION_STATUS_CANCELLED = 6;
+  ACTION_STATUS_ROLLED_BACK = 7;
+}
+
+// TrustState defines the evaluated trust posture of an agent.
+enum TrustState {
+  TRUST_STATE_UNSPECIFIED = 0;
+  TRUST_STATE_UNKNOWN = 1;
+  TRUST_STATE_EXPERIMENTAL = 2;
+  TRUST_STATE_TRUSTED = 3;
+  TRUST_STATE_CONDITIONAL = 4;
+  TRUST_STATE_PROBATION = 5;
+  TRUST_STATE_SUSPENDED = 6;
+  TRUST_STATE_REVOKED = 7;
+}
+
+// AgentContract is the canonical public contract of a real agent.
+message AgentContract {
+  AgentIdentity identity = 1;
+  AgentObjective objective = 2;
+  repeated Capability capabilities = 3;
+  repeated AgentAction allowed_actions = 4;
+  AgentMemory memory = 5;
+  AgentPolicy policy = 6;
+  AgentSecurity security = 7;
+  AgentEvaluation evaluation = 8;
+  AgentObservability observability = 9;
+  AgentTrust trust = 10;
+  map<string, string> labels = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+// AgentIdentity answers: who is acting?
+message AgentIdentity {
+  string id = 1;
+  string name = 2;
+  string version = 3;
+  string type = 4;
+  string description = 5;
+  string owner = 6;
+  string tenant = 7;
+  string issuer = 8;
+  string subject = 9;
+  LifecycleState lifecycle_state = 10;
+}
+
+// AgentObjective answers: why is the agent acting?
+message AgentObjective {
+  string primary = 1;
+  repeated string success_criteria = 2;
+  repeated string constraints = 3;
+  string desired_state = 4;
+  string priority = 5;
+}
+
+// Capability answers: what can the agent do?
+message Capability {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string input_schema_ref = 4;
+  string output_schema_ref = 5;
+  RiskLevel risk_level = 6;
+}
+
+// AgentAction declares an action the agent may request or perform.
+message AgentAction {
+  string id = 1;
+  string name = 2;
+  string target = 3;
+  bool reversible = 4;
+  bool approval_required = 5;
+  bool policy_required = 6;
+  RiskLevel risk_level = 7;
+}
+
+// AgentMemory declares how the agent may remember.
+message AgentMemory {
+  bool working = 1;
+  bool episodic = 2;
+  bool semantic = 3;
+  bool procedural = 4;
+  string retention_policy = 5;
+  repeated string data_classifications = 6;
+}
+
+// AgentPolicy declares policy enforcement behavior.
+message AgentPolicy {
+  string policy_engine = 1;
+  repeated string policy_refs = 2;
+  bool deny_by_default = 3;
+  bool fail_closed = 4;
+}
+
+// AgentSecurity declares security posture and access boundaries.
+message AgentSecurity {
+  bool authentication_required = 1;
+  bool authorization_required = 2;
+  repeated string secret_refs = 3;
+  repeated string data_classifications = 4;
+  repeated string allowed_identity_providers = 5;
+}
+
+// AgentEvaluation declares how the agent is evaluated.
+message AgentEvaluation {
+  repeated string metrics = 1;
+  string test_suite_ref = 2;
+  double minimum_trust_score = 3;
+}
+
+// AgentObservability declares required operational evidence.
+message AgentObservability {
+  bool traces = 1;
+  bool logs = 2;
+  bool metrics = 3;
+  bool audit = 4;
+}
+
+// AgentTrust declares current trust posture.
+message AgentTrust {
+  double score = 1;
+  TrustState state = 2;
+  double identity_trust = 3;
+  double capability_trust = 4;
+  double policy_trust = 5;
+  double behavioral_trust = 6;
+  double operational_trust = 7;
+  double outcome_trust = 8;
+}
+
+// DecisionRecord is the atomic proof of agency.
+message DecisionRecord {
+  string id = 1;
+  string agent_id = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  string objective = 4;
+  repeated string context_refs = 5;
+  repeated DecisionAlternative alternatives = 6;
+  string selected = 7;
+  string reasoning_summary = 8;
+  double confidence = 9;
+  string uncertainty = 10;
+  PolicyResult policy_result = 11;
+  ApprovalResult approval_result = 12;
+  string expected_outcome = 13;
+  map<string, string> labels = 14;
+}
+
+message DecisionAlternative {
+  string id = 1;
+  string description = 2;
+  string expected_impact = 3;
+  RiskLevel risk_level = 4;
+}
+
+message PolicyResult {
+  PolicyDecision decision = 1;
+  repeated string policy_refs = 2;
+  string reason = 3;
+}
+
+message ApprovalResult {
+  bool required = 1;
+  ApprovalStatus status = 2;
+  string approver = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  string reason = 5;
+}
+
+// ActionRecord captures a consequential operation performed or requested by an agent.
+message ActionRecord {
+  string id = 1;
+  string decision_id = 2;
+  string agent_id = 3;
+  string action_type = 4;
+  string target = 5;
+  google.protobuf.Struct parameters = 6;
+  AuthorizationResult authorization = 7;
+  ActionStatus status = 8;
+  bool reversible = 9;
+  string rollback_reference = 10;
+  google.protobuf.Timestamp started_at = 11;
+  google.protobuf.Timestamp completed_at = 12;
+}
+
+message AuthorizationResult {
+  string status = 1;
+  string policy_ref = 2;
+  string approver = 3;
+  string reason = 4;
+}
+
+// OutcomeRecord captures what happened after an action.
+message OutcomeRecord {
+  string id = 1;
+  string action_id = 2;
+  string agent_id = 3;
+  bool success = 4;
+  string observed_result = 5;
+  string impact = 6;
+  string error = 7;
+  repeated string follow_up_refs = 8;
+  google.protobuf.Timestamp observed_at = 9;
+}
+
+// EvaluationRecord captures measured performance over a period or task.
+message EvaluationRecord {
+  string id = 1;
+  string agent_id = 2;
+  string period = 3;
+  double reliability = 4;
+  double accuracy = 5;
+  double cost_efficiency = 6;
+  double latency_score = 7;
+  double policy_compliance = 8;
+  double trust_score = 9;
+  repeated string evidence_refs = 10;
+  google.protobuf.Timestamp evaluated_at = 11;
+}
+
+// AgentService defines optional runtime interoperability methods.
+// A system may implement the message contracts without implementing this service.
+service AgentService {
+  rpc RegisterAgent(RegisterAgentRequest) returns (RegisterAgentResponse);
+  rpc GetAgentContract(GetAgentContractRequest) returns (AgentContract);
+  rpc RecordDecision(RecordDecisionRequest) returns (RecordDecisionResponse);
+  rpc RecordAction(RecordActionRequest) returns (RecordActionResponse);
+  rpc RecordOutcome(RecordOutcomeRequest) returns (RecordOutcomeResponse);
+  rpc RecordEvaluation(RecordEvaluationRequest) returns (RecordEvaluationResponse);
+}
+
+message RegisterAgentRequest {
+  AgentContract contract = 1;
+}
+
+message RegisterAgentResponse {
+  string agent_id = 1;
+  LifecycleState lifecycle_state = 2;
+}
+
+message GetAgentContractRequest {
+  string agent_id = 1;
+}
+
+message RecordDecisionRequest {
+  DecisionRecord decision = 1;
+}
+
+message RecordDecisionResponse {
+  string decision_id = 1;
+}
+
+message RecordActionRequest {
+  ActionRecord action = 1;
+}
+
+message RecordActionResponse {
+  string action_id = 1;
+}
+
+message RecordOutcomeRequest {
+  OutcomeRecord outcome = 1;
+}
+
+message RecordOutcomeResponse {
+  string outcome_id = 1;
+}
+
+message RecordEvaluationRequest {
+  EvaluationRecord evaluation = 1;
+}
+
+message RecordEvaluationResponse {
+  string evaluation_id = 1;
+}
