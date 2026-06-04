@@ -11,6 +11,7 @@ DEFINE TABLE produces       SCHEMAFULL TYPE RELATION FROM action TO outcome;
 DEFINE TABLE feeds          SCHEMAFULL TYPE RELATION FROM outcome TO evaluation;
 DEFINE TABLE updates_trust  SCHEMAFULL TYPE RELATION FROM evaluation TO agent;
 DEFINE TABLE authorized_for SCHEMAFULL TYPE RELATION FROM agent TO tool;
+DEFINE FIELD approval_required ON authorized_for TYPE bool DEFAULT false;
 
 -- The SurrealDB CLI / tooling surface, as tools ------------------------------
 CREATE tool:sql_export SET

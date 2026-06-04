@@ -4,10 +4,10 @@ globs: ["runtime/surrealdb/**/*.surql", "**/*.surql"]
 alwaysApply: true
 ---
 
-# SurrealQL conventions (SurrealDB 2.x)
+# SurrealQL conventions (SurrealDB 3.x)
 
-Write SurrealQL that matches how SurrealDB 2.x actually behaves. These rules are
-verified against the runtime in `runtime/surrealdb/`.
+Write SurrealQL that matches how SurrealDB 3.x actually behaves. These rules are
+verified against the runtime in `runtime/surrealdb/` on SurrealDB 3.0.1.
 
 ## Schema definition
 - Prefer `DEFINE TABLE <t> SCHEMAFULL` for governed records; use `SCHEMALESS`
@@ -15,9 +15,12 @@ verified against the runtime in `runtime/surrealdb/`.
 - Define every field: `DEFINE FIELD <name> ON <table> TYPE <type>`.
 - Use the real type system: `option<T>` for nullable, `array<T>`, `record<other>`
   for links, `object`, `datetime`, `number`, `bool`, `string`, `array<float>`.
-- Use `FLEXIBLE TYPE object` only when a nested object is intentionally open.
+- For an intentionally open nested object, put `FLEXIBLE` AFTER the type:
+  `DEFINE FIELD meta ON t TYPE option<object> FLEXIBLE;` (3.x requires this order).
 - Make definitions idempotent with `IF NOT EXISTS` (e.g. in migrations).
 - Enforce enums with `ASSERT $value IN [...]` (SurrealQL has no native enum).
+- Use flat-namespaced validators: `string::is_email(...)`, not the old
+  `string::is::email(...)` (removed in 3.x).
 - Defaults and computed values: `DEFAULT time::now()`, `VALUE time::now()`,
   `READONLY` for immutable fields.
 
@@ -40,6 +43,10 @@ verified against the runtime in `runtime/surrealdb/`.
   Do NOT use the removed `DEFINE SCOPE` / `DEFINE TOKEN` v1 syntax.
 - Gate tables/fields with `PERMISSIONS FOR select|create|update|delete ...`.
 - Hash secrets with `crypto::argon2::generate` / compare with `crypto::argon2::compare`.
+
+## CLI (3.x)
+- The `surreal import` / `surreal sql` connection flag is `--endpoint` (or `-e`),
+  not the 2.x `--conn`.
 
 ## Don't
 - Don't invent functions or operators; if unsure, check the SurrealQL reference.

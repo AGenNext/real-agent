@@ -16,7 +16,7 @@ maps directly onto SurrealDB's feature set — the agent graph *is* a SurrealDB 
 | Audit on every meaningful write | `DEFINE EVENT` triggers emitting `event` records |
 | Governance / accountable owner | `DEFINE ACCESS … TYPE RECORD` + table/field `PERMISSIONS` |
 | Tools available to an agent | `tool` table, seeded from the SurrealDB CLI tooling |
-| Memory — semantic | Vector index (`MTREE`) + full-text search (`BM25`) |
+| Memory — semantic | Vector index (`HNSW`) + full-text search (`FULLTEXT … BM25`) |
 | Memory — episodic | Change feed (`CHANGEFEED`) time-travel over experience |
 | Memory — procedural / working | Schemafull policy/playbook + ephemeral task-state tables |
 | Continuous monitoring of trust | Live queries: `LIVE SELECT * FROM event` / `FROM evaluation` |
@@ -35,14 +35,10 @@ maps directly onto SurrealDB's feature set — the agent graph *is* a SurrealDB 
 
 ```sh
 surreal start --user root --pass root memory &           # or a persisted path
-surreal import --conn http://localhost:8000 --user root --pass root \
-  --ns real_agent --db v1 runtime/surrealdb/schema.surql
-surreal import --conn http://localhost:8000 --user root --pass root \
-  --ns real_agent --db v1 runtime/surrealdb/tools.surql
-surreal import --conn http://localhost:8000 --user root --pass root \
-  --ns real_agent --db v1 runtime/surrealdb/memory.surql
-surreal import --conn http://localhost:8000 --user root --pass root \
-  --ns real_agent --db v1 runtime/surrealdb/register.surql
+for f in schema tools memory register; do
+  surreal import --endpoint http://localhost:8000 --user root --pass root \
+    --ns real_agent --db v1 runtime/surrealdb/$f.surql
+done
 ```
 
 ## Tools registered from the SurrealDB tooling
@@ -59,6 +55,9 @@ operations are gated):
 
 ## Status
 
-Reference runtime, version 0.1.0. SurrealQL targets SurrealDB 2.x. No UI is
-included — pair with SurrealDB's own [Surrealist](https://surrealdb.com/surrealist)
-for table views, querying, and graph visualisation, or build a dedicated console.
+Reference runtime, version 0.1.0. SurrealQL targets **SurrealDB 3.x** and is
+verified end-to-end on 3.0.1 (all four files import; graph traversal, HNSW
+vector KNN, BM25 full-text, change feeds, migrations, and audit triggers all
+exercised). No UI is included — pair with SurrealDB's own
+[Surrealist](https://surrealdb.com/surrealist) for table views, querying, and
+graph visualisation, or build a dedicated console.

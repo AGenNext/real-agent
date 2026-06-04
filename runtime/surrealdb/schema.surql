@@ -13,8 +13,8 @@
 --   governance / authority      DEFINE ACCESS + table/field PERMISSIONS
 --   derived current state       computed via graph traversal of events
 --
--- Target: SurrealDB 2.x (SurrealQL v2). Apply with:
---   surreal import --conn <url> --user <u> --pass <p> --ns real_agent --db v1 schema.surql
+-- Target: SurrealDB 3.x. Apply with:
+--   surreal import --endpoint <url> --user <u> --pass <p> --ns real_agent --db v1 schema.surql
 
 -- ---------------------------------------------------------------------------
 -- Enumerated domains (kept in sync with proto/real_agent/v1/common.proto)
@@ -33,7 +33,7 @@ DEFINE ACCESS owner ON DATABASE TYPE RECORD
   DURATION FOR TOKEN 1h, FOR SESSION 8h;
 
 DEFINE TABLE owner SCHEMAFULL;
-DEFINE FIELD email ON owner TYPE string ASSERT string::is::email($value);
+DEFINE FIELD email ON owner TYPE string ASSERT string::is_email($value);
 DEFINE FIELD name  ON owner TYPE string;
 DEFINE FIELD pass  ON owner TYPE string PERMISSIONS FOR select NONE;
 DEFINE INDEX owner_email ON owner FIELDS email UNIQUE;
@@ -87,7 +87,7 @@ DEFINE FIELD policy.policy_engine   ON agent TYPE option<string>;
 DEFINE FIELD policy.policy_refs     ON agent TYPE option<array<string>>;
 
 DEFINE FIELD memory ON agent TYPE option<object>;
-DEFINE FIELD trust  ON agent FLEXIBLE TYPE option<object>;
+DEFINE FIELD trust  ON agent TYPE option<object> FLEXIBLE;
 
 DEFINE FIELD created_at ON agent TYPE datetime DEFAULT time::now() READONLY;
 DEFINE FIELD updated_at ON agent TYPE datetime DEFAULT time::now() VALUE time::now();
@@ -125,7 +125,7 @@ DEFINE FIELD uncertainty       ON decision TYPE option<string>;
 DEFINE FIELD policy_result     ON decision TYPE object;
 DEFINE FIELD policy_result.decision ON decision TYPE string
   ASSERT $value IN ['allow','deny','require_approval','require_more_context','escalate'];
-DEFINE FIELD approval_result   ON decision FLEXIBLE TYPE option<object>;
+DEFINE FIELD approval_result   ON decision TYPE option<object> FLEXIBLE;
 DEFINE FIELD expected_outcome  ON decision TYPE option<string>;
 
 -- ---------------------------------------------------------------------------
@@ -137,7 +137,7 @@ DEFINE FIELD agent         ON action TYPE record<agent>;
 DEFINE FIELD tool          ON action TYPE option<record<tool>>;
 DEFINE FIELD action_type   ON action TYPE string;
 DEFINE FIELD target        ON action TYPE string;
-DEFINE FIELD parameters    ON action FLEXIBLE TYPE option<object>;
+DEFINE FIELD parameters    ON action TYPE option<object> FLEXIBLE;
 DEFINE FIELD authorization ON action TYPE object;
 DEFINE FIELD authorization.status ON action TYPE string
   ASSERT $value IN ['authorized','denied','approval_required'];
@@ -182,7 +182,7 @@ DEFINE FIELD type    ON event TYPE string
   ];
 DEFINE FIELD agent   ON event TYPE record<agent>;
 DEFINE FIELD subject ON event TYPE option<string>;
-DEFINE FIELD payload ON event FLEXIBLE TYPE option<object>;
+DEFINE FIELD payload ON event TYPE option<object> FLEXIBLE;
 DEFINE FIELD at      ON event TYPE datetime DEFAULT time::now() READONLY;
 DEFINE INDEX event_agent_at ON event FIELDS agent, at;
 

@@ -5,7 +5,7 @@
 --
 --   memory type   SurrealDB feature
 --   -----------   -----------------
---   semantic      vector index (MTREE) + full-text search (BM25)
+--   semantic      vector index (HNSW) + full-text search (BM25)
 --   episodic      change feed (time-travel over decisions/actions/outcomes)
 --   procedural    schemafull policy/playbook records
 --   working       ephemeral per-agent task state
@@ -30,11 +30,11 @@ DEFINE FIELD source         ON semantic_memory TYPE option<string>;
 DEFINE FIELD retain_until    ON semantic_memory TYPE option<datetime>;
 DEFINE FIELD created_at      ON semantic_memory TYPE datetime DEFAULT time::now() READONLY;
 
--- Vector similarity (semantic recall). Dimension matches a 384-d embedder;
--- adjust DIMENSION to your model.
-DEFINE INDEX semantic_vec ON semantic_memory FIELDS embedding MTREE DIMENSION 384 DIST COSINE;
+-- Vector similarity (semantic recall) via an HNSW index. Dimension matches a
+-- 384-d embedder; adjust DIMENSION to your model.
+DEFINE INDEX semantic_vec ON semantic_memory FIELDS embedding HNSW DIMENSION 384 DIST COSINE;
 -- Full-text recall over the same content.
-DEFINE INDEX semantic_text ON semantic_memory FIELDS content SEARCH ANALYZER doc BM25 HIGHLIGHTS;
+DEFINE INDEX semantic_text ON semantic_memory FIELDS content FULLTEXT ANALYZER doc BM25 HIGHLIGHTS;
 
 -- ---------------------------------------------------------------------------
 -- Procedural memory: policies, playbooks, routines, skills
@@ -44,7 +44,7 @@ DEFINE FIELD agent       ON procedural_memory TYPE record<agent>;
 DEFINE FIELD kind        ON procedural_memory TYPE string
   ASSERT $value IN ['policy','playbook','routine','skill'];
 DEFINE FIELD name        ON procedural_memory TYPE string;
-DEFINE FIELD definition  ON procedural_memory FLEXIBLE TYPE object;
+DEFINE FIELD definition  ON procedural_memory TYPE object FLEXIBLE;
 DEFINE FIELD version     ON procedural_memory TYPE string DEFAULT '0.1.0';
 DEFINE INDEX procedural_name ON procedural_memory FIELDS agent, name, version UNIQUE;
 
@@ -54,7 +54,7 @@ DEFINE INDEX procedural_name ON procedural_memory FIELDS agent, name, version UN
 DEFINE TABLE working_memory SCHEMAFULL;
 DEFINE FIELD agent      ON working_memory TYPE record<agent>;
 DEFINE FIELD task       ON working_memory TYPE string;
-DEFINE FIELD state      ON working_memory FLEXIBLE TYPE object;
+DEFINE FIELD state      ON working_memory TYPE object FLEXIBLE;
 DEFINE FIELD expires_at ON working_memory TYPE datetime DEFAULT time::now() + 1h;
 DEFINE FIELD updated_at ON working_memory TYPE datetime DEFAULT time::now() VALUE time::now();
 

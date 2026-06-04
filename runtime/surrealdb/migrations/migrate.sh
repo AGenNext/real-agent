@@ -6,13 +6,13 @@
 # applied migrations are skipped, so it is safe to run on every deploy.
 #
 # Usage:
-#   CONN=http://localhost:8000 USER=root PASS=root NS=real_agent DB=v1 \
+#   ENDPOINT=http://localhost:8000 USER=root PASS=root NS=real_agent DB=v1 \
 #     ./migrate.sh
 #
-# Requires the `surreal` CLI on PATH.
+# Requires the `surreal` CLI (3.x) on PATH.
 set -euo pipefail
 
-CONN="${CONN:-http://localhost:8000}"
+ENDPOINT="${ENDPOINT:-http://localhost:8000}"
 USER="${USER:-root}"
 PASS="${PASS:-root}"
 NS="${NS:-real_agent}"
@@ -20,7 +20,7 @@ DB="${DB:-v1}"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 run_sql() {
-  surreal sql --conn "$CONN" --user "$USER" --pass "$PASS" --ns "$NS" --db "$DB" --json <<<"$1"
+  surreal sql --endpoint "$ENDPOINT" --user "$USER" --pass "$PASS" --ns "$NS" --db "$DB" --json <<<"$1"
 }
 
 # Ensure the tracking table exists.
@@ -37,7 +37,7 @@ for f in "$DIR"/[0-9]*.surql; do
     continue
   fi
   echo "apply  $version"
-  surreal import --conn "$CONN" --user "$USER" --pass "$PASS" --ns "$NS" --db "$DB" "$f" >/dev/null
+  surreal import --endpoint "$ENDPOINT" --user "$USER" --pass "$PASS" --ns "$NS" --db "$DB" "$f" >/dev/null
   run_sql "CREATE _migration:\`${version}\`;" >/dev/null
 done
 

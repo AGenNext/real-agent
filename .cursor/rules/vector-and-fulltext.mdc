@@ -6,12 +6,13 @@ alwaysApply: false
 
 # Vector indexes, full-text, and change feeds
 
-Verified against `runtime/surrealdb/memory.surql` on SurrealDB 2.3.7.
+Verified against `runtime/surrealdb/memory.surql` on SurrealDB 3.0.1.
 
 ## Vector (semantic) search
 - Store embeddings as `array<float>`.
-- Define an MTREE index sized to your embedder:
-  `DEFINE INDEX semantic_vec ON semantic_memory FIELDS embedding MTREE DIMENSION 384 DIST COSINE;`
+- Define an HNSW index sized to your embedder (3.x uses HNSW; MTREE is gone):
+  `DEFINE INDEX semantic_vec ON semantic_memory FIELDS embedding HNSW DIMENSION 384 DIST COSINE;`
+- The index enforces `DIMENSION`; queries with a different-length vector error.
 - K-nearest-neighbour query with the knn operator:
   `SELECT id, content FROM semantic_memory WHERE embedding <|5,COSINE|> $q;`
 - Or score with a vector function:
@@ -19,10 +20,10 @@ Verified against `runtime/surrealdb/memory.surql` on SurrealDB 2.3.7.
 - Keep `DIMENSION` consistent with the model that produced `$q`.
 
 ## Full-text search
-- Define an analyzer, then a SEARCH index:
+- Define an analyzer, then a FULLTEXT index (3.x renamed `SEARCH` → `FULLTEXT`):
   ```
   DEFINE ANALYZER doc TOKENIZERS blank,class FILTERS lowercase,ascii;
-  DEFINE INDEX semantic_text ON semantic_memory FIELDS content SEARCH ANALYZER doc BM25 HIGHLIGHTS;
+  DEFINE INDEX semantic_text ON semantic_memory FIELDS content FULLTEXT ANALYZER doc BM25 HIGHLIGHTS;
   ```
 - Match with the `@@` operator; use a reference number to score/highlight:
   `SELECT content, search::score(1) AS score FROM semantic_memory WHERE content @1@ 'restore cluster' ORDER BY score DESC;`

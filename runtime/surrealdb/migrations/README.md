@@ -13,7 +13,7 @@ Versioned, idempotent schema evolution for the Real Agent SurrealDB runtime.
 ## Run
 
 ```sh
-CONN=http://localhost:8000 USER=root PASS=root NS=real_agent DB=v1 \
+ENDPOINT=http://localhost:8000 USER=root PASS=root NS=real_agent DB=v1 \
   ./migrate.sh
 ```
 
