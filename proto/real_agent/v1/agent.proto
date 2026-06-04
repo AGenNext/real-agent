@@ -94,7 +94,36 @@ message AgentAction {
   RiskLevel risk_level = 7;
 }
 
-// AgentMemory declares how the agent may remember.
+// SemanticMemoryConfig surfaces the native semantic store: vector similarity
+// (MTREE) plus full-text recall, as realized in runtime/surrealdb/memory.surql.
+message SemanticMemoryConfig {
+  bool enabled = 1;
+  uint32 vector_dimension = 2;   // MTREE index dimension
+  string distance = 3;           // e.g. "COSINE", "EUCLIDEAN"
+  string embedding_model = 4;
+  bool full_text = 5;            // BM25 full-text index alongside vectors
+}
+
+// EpisodicMemoryConfig surfaces native change-feed time-travel over experience.
+message EpisodicMemoryConfig {
+  bool enabled = 1;
+  string change_feed_retention = 2;  // e.g. "30d"
+}
+
+// ProceduralMemoryConfig surfaces policy/playbook/routine/skill storage.
+message ProceduralMemoryConfig {
+  bool enabled = 1;
+}
+
+// WorkingMemoryConfig surfaces ephemeral current-task state.
+message WorkingMemoryConfig {
+  bool enabled = 1;
+  string ttl = 2;  // time-to-live for working state, e.g. "1h"
+}
+
+// AgentMemory declares how the agent may remember. The boolean fields remain
+// for minimal contracts; the *_config fields surface the native runtime
+// capabilities for each memory type.
 message AgentMemory {
   bool working = 1;
   bool episodic = 2;
@@ -102,6 +131,10 @@ message AgentMemory {
   bool procedural = 4;
   string retention_policy = 5;
   repeated string data_classifications = 6;
+  SemanticMemoryConfig semantic_config = 7;
+  EpisodicMemoryConfig episodic_config = 8;
+  ProceduralMemoryConfig procedural_config = 9;
+  WorkingMemoryConfig working_config = 10;
 }
 
 // AgentPolicy declares policy enforcement behavior.

@@ -94,7 +94,41 @@
         "episodic": { "type": "boolean" },
         "semantic": { "type": "boolean" },
         "procedural": { "type": "boolean" },
-        "retention_policy": { "type": "string" }
+        "retention_policy": { "type": "string" },
+        "semantic_config": {
+          "type": "object",
+          "description": "Native semantic store: vector similarity + full-text.",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "vector_dimension": { "type": "integer", "minimum": 1 },
+            "distance": { "type": "string" },
+            "embedding_model": { "type": "string" },
+            "full_text": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "episodic_config": {
+          "type": "object",
+          "description": "Native change-feed time-travel over experience.",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "change_feed_retention": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "procedural_config": {
+          "type": "object",
+          "properties": { "enabled": { "type": "boolean" } },
+          "additionalProperties": false
+        },
+        "working_config": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "ttl": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
       },
       "additionalProperties": false
     },
