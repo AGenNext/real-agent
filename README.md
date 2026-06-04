@@ -96,6 +96,7 @@ Every pass through the loop must produce a decision record.
     └── surrealdb/
         ├── schema.surql
         ├── tools.surql
+        ├── memory.surql
         ├── register.surql
         └── README.md
 ```

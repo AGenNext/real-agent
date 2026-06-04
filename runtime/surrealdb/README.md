@@ -16,6 +16,9 @@ maps directly onto SurrealDB's feature set — the agent graph *is* a SurrealDB 
 | Audit on every meaningful write | `DEFINE EVENT` triggers emitting `event` records |
 | Governance / accountable owner | `DEFINE ACCESS … TYPE RECORD` + table/field `PERMISSIONS` |
 | Tools available to an agent | `tool` table, seeded from the SurrealDB CLI tooling |
+| Memory — semantic | Vector index (`MTREE`) + full-text search (`BM25`) |
+| Memory — episodic | Change feed (`CHANGEFEED`) time-travel over experience |
+| Memory — procedural / working | Schemafull policy/playbook + ephemeral task-state tables |
 | Continuous monitoring of trust | Live queries: `LIVE SELECT * FROM event` / `FROM evaluation` |
 
 ## Files
@@ -24,6 +27,7 @@ maps directly onto SurrealDB's feature set — the agent graph *is* a SurrealDB 
 |---|---|
 | `schema.surql` | Tables, fields, constraints, access control, audit triggers |
 | `tools.surql` | Graph edge tables + SurrealDB CLI tooling registered as `tool` records |
+| `memory.surql` | Memory primitive: semantic (vector + full-text), episodic (change feed), procedural, working |
 | `register.surql` | Example `RegisterAgent` flow (owner → contract → authority → audit) |
 
 ## Apply
@@ -34,6 +38,8 @@ surreal import --conn http://localhost:8000 --user root --pass root \
   --ns real_agent --db v1 runtime/surrealdb/schema.surql
 surreal import --conn http://localhost:8000 --user root --pass root \
   --ns real_agent --db v1 runtime/surrealdb/tools.surql
+surreal import --conn http://localhost:8000 --user root --pass root \
+  --ns real_agent --db v1 runtime/surrealdb/memory.surql
 surreal import --conn http://localhost:8000 --user root --pass root \
   --ns real_agent --db v1 runtime/surrealdb/register.surql
 ```
