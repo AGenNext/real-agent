@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://real-agent.dev/schemas/decision.schema.json",
+  "title": "Real Agent Decision",
+  "description": "Canonical schema for a real agent decision record. A decision record is the atomic proof of agency.",
+  "type": "object",
+  "required": [
+    "id",
+    "agent_id",
+    "timestamp",
+    "objective",
+    "context_refs",
+    "alternatives",
+    "selected",
+    "reasoning_summary",
+    "confidence",
+    "policy_result"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "agent_id": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "objective": { "type": "string", "minLength": 1 },
+    "context_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "alternatives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "description"],
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "expected_impact": { "type": "string" },
+          "risk_level": { "type": "string", "enum": ["low", "medium", "high", "critical"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "selected": { "type": "string", "minLength": 1 },
+    "reasoning_summary": { "type": "string", "minLength": 1 },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "uncertainty": { "type": "string" },
+    "policy_result": {
+      "type": "object",
+      "required": ["decision"],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": ["allow", "deny", "require_approval", "require_more_context", "escalate"]
+        },
+        "policy_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reason": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "approval_result": {
+      "type": "object",
+      "properties": {
+        "required": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["not_required", "pending", "approved", "rejected", "expired"] },
+        "approver": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "expected_outcome": { "type": "string" }
+  },
+  "additionalProperties": false
+}
