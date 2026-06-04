@@ -7,6 +7,7 @@ use std::error::Error;
 use std::fmt;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use crate::memory::*;
 use crate::model::*;
 use crate::store::Store;
 
@@ -365,5 +366,93 @@ impl<S: Store> Runtime<S> {
             self.transition(agent_id, LifecycleState::Suspended)?;
         }
         Ok(evaluation)
+    }
+
+    // --- Memory primitive ---------------------------------------------------
+
+    /// Store a semantic (knowledge) memory for an agent.
+    pub fn remember_semantic(
+        &mut self,
+        agent_id: &str,
+        content: &str,
+        embedding: Vec<f32>,
+        classification: Classification,
+    ) -> Result<SemanticRecord> {
+        let _ = self.agent(agent_id)?;
+        let id = self.next_id("semantic");
+        let record = SemanticRecord {
+            id,
+            agent_id: agent_id.to_string(),
+            content: content.to_string(),
+            embedding,
+            classification,
+            at: self.now(),
+        };
+        self.store.put_semantic(record.clone());
+        Ok(record)
+    }
+
+    /// Recall the top-`k` semantic memories most similar to a query embedding
+    /// (exact cosine KNN; knowledge retrieval for grounding/RAG).
+    pub fn recall_semantic(&self, agent_id: &str, query: &[f32], k: usize) -> Vec<Recall> {
+        let mut hits: Vec<Recall> = self
+            .store
+            .semantic_for(agent_id)
+            .into_iter()
+            .map(|record| {
+                let score = cosine(&record.embedding, query);
+                Recall { record, score }
+            })
+            .collect();
+        hits.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
+        hits.truncate(k);
+        hits
+    }
+
+    /// Store a procedural memory (policy/playbook/routine/skill).
+    pub fn remember_procedural(
+        &mut self,
+        agent_id: &str,
+        kind: ProceduralKind,
+        name: &str,
+        body: &str,
+    ) -> Result<ProceduralRecord> {
+        let _ = self.agent(agent_id)?;
+        let id = self.next_id("procedural");
+        let record = ProceduralRecord {
+            id,
+            agent_id: agent_id.to_string(),
+            kind,
+            name: name.to_string(),
+            body: body.to_string(),
+        };
+        self.store.put_procedural(record.clone());
+        Ok(record)
+    }
+
+    pub fn procedural(&self, agent_id: &str) -> Vec<ProceduralRecord> {
+        self.store.procedural_for(agent_id)
+    }
+
+    /// Set the agent's ephemeral working state for a task.
+    pub fn set_working(&mut self, agent_id: &str, task: &str, state: &str, ttl_ms: Millis) -> Result<()> {
+        let _ = self.agent(agent_id)?;
+        let expires_at = self.now() + ttl_ms;
+        self.store.set_working(WorkingMemory {
+            agent_id: agent_id.to_string(),
+            task: task.to_string(),
+            state: state.to_string(),
+            expires_at,
+        });
+        Ok(())
+    }
+
+    pub fn get_working(&self, agent_id: &str, task: &str) -> Option<WorkingMemory> {
+        self.store.get_working(agent_id, task)
+    }
+
+    /// Episodic memory: the agent's slice of the append-only event log.
+    pub fn episodic(&self, agent_id: &str) -> Vec<Event> {
+        self.store.events().into_iter().filter(|e| e.agent_id == agent_id).collect()
     }
 }

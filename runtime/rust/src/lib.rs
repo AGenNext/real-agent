@@ -15,10 +15,14 @@
 //! authority distinct from capability, deny-by-default policy, approval gates,
 //! trust-driven suspension, and an append-only audit log.
 
+pub mod memory;
 pub mod model;
 pub mod runtime;
 pub mod store;
 
+pub use memory::{
+    cosine, Classification, ProceduralKind, ProceduralRecord, Recall, SemanticRecord, WorkingMemory,
+};
 pub use model::*;
 pub use runtime::{Runtime, RuntimeError, SUSPEND_THRESHOLD};
 pub use store::{MemoryStore, Store};
