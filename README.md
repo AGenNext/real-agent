@@ -88,10 +88,16 @@ Every pass through the loop must produce a decision record.
 │   └── real_agent/v1/
 │       ├── agent.proto
 │       └── common.proto
-└── schemas/
-    ├── agent.schema.json
-    ├── decision.schema.json
-    └── action.schema.json
+├── schemas/
+│   ├── agent.schema.json
+│   ├── decision.schema.json
+│   └── action.schema.json
+└── runtime/
+    └── surrealdb/
+        ├── schema.surql
+        ├── tools.surql
+        ├── register.surql
+        └── README.md
 ```
 
 ## Status
