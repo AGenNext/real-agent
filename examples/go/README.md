@@ -26,8 +26,8 @@ kubectl -n database wait --for=condition=ready pod \
 
 # 2. Load the schema
 kubectl -n database port-forward svc/surrealdb 8000:8000 &
-surreal import --conn http://localhost:8000 --user root --pass change-me-please \
-  --ns real_agent --db memory ../../schemas/memory.surql
+surreal sql -e http://localhost:8000 -u root -p change-me-please \
+  --ns real_agent --db memory < ../../schemas/memory.surql
 
 # 3. Run the demo
 export SURREAL_ENDPOINT="ws://localhost:8000/rpc"

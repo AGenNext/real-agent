@@ -67,6 +67,19 @@ type record struct {
 	ID models.RecordID `json:"id"`
 }
 
+// createID creates a record in a table and returns its generated id. CREATE on
+// a table returns an array, so we decode into []record and take the first.
+func (s *Store) createID(table string, data any) (models.RecordID, error) {
+	res, err := surrealdb.Create[[]record](s.db, models.Table(table), data)
+	if err != nil {
+		return models.RecordID{}, err
+	}
+	if res == nil || len(*res) == 0 {
+		return models.RecordID{}, fmt.Errorf("agentmem: create %s: empty result", table)
+	}
+	return (*res)[0].ID, nil
+}
+
 // Agent mirrors the agent table (SPEC §4.1 Identity).
 type Agent struct {
 	Name      string         `json:"name"`
@@ -108,11 +121,11 @@ func (s *Store) RecordDecision(d Decision) (models.RecordID, error) {
 	if d.Alternatives == nil {
 		d.Alternatives = []any{}
 	}
-	res, err := surrealdb.Create[record](s.db, models.Table("decision"), d)
+	id, err := s.createID("decision", d)
 	if err != nil {
 		return models.RecordID{}, fmt.Errorf("agentmem: record decision: %w", err)
 	}
-	return res.ID, nil
+	return id, nil
 }
 
 // Action mirrors the action table (SPEC §4.5).
@@ -131,11 +144,11 @@ func (s *Store) RecordAction(a Action) (models.RecordID, error) {
 	if a.Status == "" {
 		a.Status = "pending"
 	}
-	res, err := surrealdb.Create[record](s.db, models.Table("action"), a)
+	id, err := s.createID("action", a)
 	if err != nil {
 		return models.RecordID{}, fmt.Errorf("agentmem: record action: %w", err)
 	}
-	return res.ID, nil
+	return id, nil
 }
 
 // Outcome mirrors the outcome table (SPEC §4.6).
@@ -150,11 +163,11 @@ type Outcome struct {
 
 // RecordOutcome persists the result of an action and returns its generated id.
 func (s *Store) RecordOutcome(o Outcome) (models.RecordID, error) {
-	res, err := surrealdb.Create[record](s.db, models.Table("outcome"), o)
+	id, err := s.createID("outcome", o)
 	if err != nil {
 		return models.RecordID{}, fmt.Errorf("agentmem: record outcome: %w", err)
 	}
-	return res.ID, nil
+	return id, nil
 }
 
 // RememberFact upserts a semantic memory fact for an agent (SPEC §4.7). The
@@ -236,6 +249,9 @@ func (s *Store) TraceAgent(agentID string) (*AgentTrace, error) {
 
 // SetWorkingMemory upserts transient task state, keyed by [agentID, task].
 func (s *Store) SetWorkingMemory(agentID, task string, state map[string]any) error {
+	if state == nil {
+		state = map[string]any{}
+	}
 	rid := models.NewRecordID("working_memory", []any{agentID, task})
 	_, err := surrealdb.Upsert[record](s.db, rid, map[string]any{
 		"agent": models.NewRecordID("agent", agentID),
@@ -250,7 +266,7 @@ func (s *Store) SetWorkingMemory(agentID, task string, state map[string]any) err
 
 // RememberProcedure stores a named, ordered playbook (procedural memory).
 func (s *Store) RememberProcedure(agentID, name string, steps []string) (models.RecordID, error) {
-	res, err := surrealdb.Create[record](s.db, models.Table("procedure"), map[string]any{
+	id, err := s.createID("procedure", map[string]any{
 		"agent": models.NewRecordID("agent", agentID),
 		"name":  name,
 		"steps": steps,
@@ -258,7 +274,7 @@ func (s *Store) RememberProcedure(agentID, name string, steps []string) (models.
 	if err != nil {
 		return models.RecordID{}, fmt.Errorf("agentmem: remember procedure: %w", err)
 	}
-	return res.ID, nil
+	return id, nil
 }
 
 // Knowledge is a unit of retrievable semantic memory for RAG. Embedding is the
@@ -274,17 +290,22 @@ type Knowledge struct {
 // RememberKnowledge stores a knowledge chunk and its embedding for later
 // retrieval (SPEC §4.7 semantic memory).
 func (s *Store) RememberKnowledge(agentID string, k Knowledge) (models.RecordID, error) {
-	res, err := surrealdb.Create[record](s.db, models.Table("knowledge"), map[string]any{
+	data := map[string]any{
 		"agent":     models.NewRecordID("agent", agentID),
 		"content":   k.Content,
 		"embedding": k.Embedding,
-		"metadata":  k.Metadata,
-		"source":    nullStr(k.Source),
-	})
+	}
+	if k.Metadata != nil {
+		data["metadata"] = k.Metadata
+	}
+	if k.Source != "" {
+		data["source"] = k.Source
+	}
+	id, err := s.createID("knowledge", data)
 	if err != nil {
 		return models.RecordID{}, fmt.Errorf("agentmem: remember knowledge: %w", err)
 	}
-	return res.ID, nil
+	return id, nil
 }
 
 // KnowledgeHit is one result of a similarity search, ordered nearest-first.
