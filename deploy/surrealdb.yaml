@@ -1,0 +1,87 @@
+# SurrealDB on k3s, using local-path storage (the default storage class that
+# ships with k3s). Persists to RocksDB on a 5Gi PVC that survives restarts.
+#
+#   kubectl apply -f deploy/surrealdb.yaml
+#   kubectl -n database rollout status statefulset/surrealdb
+#
+# Endpoint inside the cluster:
+#   ws://surrealdb.database.svc.cluster.local:8000/rpc
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: database
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: surrealdb-secret
+  namespace: database
+type: Opaque
+stringData:
+  SURREAL_USER: root
+  SURREAL_PASS: change-me-please   # <-- edit this before applying
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: surrealdb-data
+  namespace: database
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: surrealdb
+  namespace: database
+spec:
+  serviceName: surrealdb
+  replicas: 1
+  selector:
+    matchLabels: { app: surrealdb }
+  template:
+    metadata:
+      labels: { app: surrealdb }
+    spec:
+      containers:
+        - name: surrealdb
+          image: surrealdb/surrealdb:v2.1
+          args:
+            - start
+            - --bind=0.0.0.0:8000
+            - --user=$(SURREAL_USER)
+            - --pass=$(SURREAL_PASS)
+            - rocksdb:/data/database.db
+          envFrom:
+            - secretRef:
+                name: surrealdb-secret
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: surrealdb-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: surrealdb
+  namespace: database
+spec:
+  selector: { app: surrealdb }
+  ports:
+    - port: 8000
+      targetPort: 8000
