@@ -18,9 +18,11 @@ decision-record requirements, backed by SurrealDB.
 ## Run
 
 ```bash
-# 1. Deploy SurrealDB (edit the password in the manifest first)
+# 1. Deploy SurrealDB via the official Helm chart (edit the password first).
+#    k3s's Helm controller reconciles this HelmChart resource for you.
 kubectl apply -f ../../deploy/surrealdb.yaml
-kubectl -n database rollout status statefulset/surrealdb
+kubectl -n database wait --for=condition=ready pod \
+  -l app.kubernetes.io/name=surrealdb --timeout=180s
 
 # 2. Load the schema
 kubectl -n database port-forward svc/surrealdb 8000:8000 &
