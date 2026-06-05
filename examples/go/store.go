@@ -54,6 +54,14 @@ func Open(cfg Config) (*Store, error) {
 // Close terminates the SurrealDB connection.
 func (s *Store) Close() error { return s.db.Close() }
 
+// nullStr maps an empty Go string to nil so option<string> fields stay unset.
+func nullStr(s string) any {
+	if s == "" {
+		return nil
+	}
+	return s
+}
+
 // record is the minimal shape returned by Create/Upsert: just the record id.
 type record struct {
 	ID models.RecordID `json:"id"`
@@ -163,4 +171,143 @@ func (s *Store) RememberFact(agentID, key string, value any, source string) erro
 		return fmt.Errorf("agentmem: remember fact: %w", err)
 	}
 	return nil
+}
+
+// Graph edge names connecting the agent loop (see schemas/memory.surql).
+const (
+	EdgeMade      = "made"      // agent    -> decision
+	EdgeTriggered = "triggered" // decision -> action
+	EdgeProduced  = "produced"  // action   -> outcome
+	EdgeRecalls   = "recalls"   // agent    -> memory_fact
+)
+
+// Relate creates a graph edge `in -> relation -> out`, optionally carrying edge
+// metadata (SPEC §4.3 traceability). Returns the edge's record id.
+func (s *Store) Relate(in, out models.RecordID, relation string, data map[string]any) (models.RecordID, error) {
+	rel := surrealdb.Relationship{
+		In:       in,
+		Out:      out,
+		Relation: models.Table(relation),
+		Data:     data,
+	}
+	if err := surrealdb.Relate(s.db, &rel); err != nil {
+		return models.RecordID{}, fmt.Errorf("agentmem: relate %s: %w", relation, err)
+	}
+	if rel.ID != nil {
+		return *rel.ID, nil
+	}
+	return models.RecordID{}, nil
+}
+
+// AgentTrace is a flattened view of an agent's decision graph, gathered by
+// walking the made/triggered/produced edges.
+type AgentTrace struct {
+	Decisions []models.RecordID `json:"decisions"`
+	Actions   []models.RecordID `json:"actions"`
+	Outcomes  []models.RecordID `json:"outcomes"`
+}
+
+// TraceAgent walks the graph from an agent and returns every decision, action,
+// and outcome reachable through the made/triggered/produced edges (SPEC §6).
+func (s *Store) TraceAgent(agentID string) (*AgentTrace, error) {
+	rid := models.NewRecordID("agent", agentID)
+	res, err := surrealdb.Query[[]AgentTrace](s.db, `
+		SELECT
+			->made->decision AS decisions,
+			->made->decision->triggered->action AS actions,
+			->made->decision->triggered->action->produced->outcome AS outcomes
+		FROM $agent`,
+		map[string]any{"agent": rid})
+	if err != nil {
+		return nil, fmt.Errorf("agentmem: trace agent: %w", err)
+	}
+	if res == nil || len(*res) == 0 || len((*res)[0].Result) == 0 {
+		return &AgentTrace{}, nil
+	}
+	trace := (*res)[0].Result[0]
+	return &trace, nil
+}
+
+// ---------------------------------------------------------------------------
+// Memory layers (SPEC §4.7): working, procedural, and knowledge (RAG).
+// Episodic memory is the decision/action/outcome chain above; semantic
+// key/value memory is RememberFact.
+// ---------------------------------------------------------------------------
+
+// SetWorkingMemory upserts transient task state, keyed by [agentID, task].
+func (s *Store) SetWorkingMemory(agentID, task string, state map[string]any) error {
+	rid := models.NewRecordID("working_memory", []any{agentID, task})
+	_, err := surrealdb.Upsert[record](s.db, rid, map[string]any{
+		"agent": models.NewRecordID("agent", agentID),
+		"task":  task,
+		"state": state,
+	})
+	if err != nil {
+		return fmt.Errorf("agentmem: set working memory: %w", err)
+	}
+	return nil
+}
+
+// RememberProcedure stores a named, ordered playbook (procedural memory).
+func (s *Store) RememberProcedure(agentID, name string, steps []string) (models.RecordID, error) {
+	res, err := surrealdb.Create[record](s.db, models.Table("procedure"), map[string]any{
+		"agent": models.NewRecordID("agent", agentID),
+		"name":  name,
+		"steps": steps,
+	})
+	if err != nil {
+		return models.RecordID{}, fmt.Errorf("agentmem: remember procedure: %w", err)
+	}
+	return res.ID, nil
+}
+
+// Knowledge is a unit of retrievable semantic memory for RAG. Embedding is the
+// vector produced by an embedding model; its length must match the knowledge
+// index DIMENSION (see schemas/memory.surql).
+type Knowledge struct {
+	Content   string         `json:"content"`
+	Embedding []float64      `json:"embedding"`
+	Metadata  map[string]any `json:"metadata,omitempty"`
+	Source    string         `json:"source,omitempty"`
+}
+
+// RememberKnowledge stores a knowledge chunk and its embedding for later
+// retrieval (SPEC §4.7 semantic memory).
+func (s *Store) RememberKnowledge(agentID string, k Knowledge) (models.RecordID, error) {
+	res, err := surrealdb.Create[record](s.db, models.Table("knowledge"), map[string]any{
+		"agent":     models.NewRecordID("agent", agentID),
+		"content":   k.Content,
+		"embedding": k.Embedding,
+		"metadata":  k.Metadata,
+		"source":    nullStr(k.Source),
+	})
+	if err != nil {
+		return models.RecordID{}, fmt.Errorf("agentmem: remember knowledge: %w", err)
+	}
+	return res.ID, nil
+}
+
+// KnowledgeHit is one result of a similarity search, ordered nearest-first.
+type KnowledgeHit struct {
+	ID       models.RecordID `json:"id"`
+	Content  string          `json:"content"`
+	Distance float64         `json:"distance"`
+}
+
+// SearchKnowledge returns the k nearest knowledge chunks to the query embedding
+// by cosine distance, using the HNSW vector index — the retrieval half of RAG.
+func (s *Store) SearchKnowledge(query []float64, k int) ([]KnowledgeHit, error) {
+	// k and the HNSW ef-search size are literals in the operator <|k,ef|>.
+	sql := fmt.Sprintf(
+		`SELECT id, content, vector::distance::knn() AS distance
+		 FROM knowledge WHERE embedding <|%d,40|> $q
+		 ORDER BY distance`, k)
+	res, err := surrealdb.Query[[]KnowledgeHit](s.db, sql, map[string]any{"q": query})
+	if err != nil {
+		return nil, fmt.Errorf("agentmem: search knowledge: %w", err)
+	}
+	if res == nil || len(*res) == 0 {
+		return nil, nil
+	}
+	return (*res)[0].Result, nil
 }
