@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://real-agent.dev/schemas/outcome.schema.json",
+  "title": "Real Agent Outcome",
+  "description": "Canonical schema for a real agent outcome record. An outcome captures the observed result of an action (SPEC 4.6).",
+  "type": "object",
+  "required": [
+    "id",
+    "action_id",
+    "agent_id",
+    "status"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "action_id": { "type": "string", "minLength": 1 },
+    "agent_id": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "status": {
+      "type": "string",
+      "enum": ["success", "failure", "partial"]
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "message": { "type": "string" },
+        "retryable": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "impact": { "type": "string" },
+    "follow_up": {
+      "type": "object",
+      "properties": {
+        "required": { "type": "boolean" },
+        "description": { "type": "string" },
+        "next_objective": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "observed_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}

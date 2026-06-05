@@ -76,3 +76,13 @@ DEFINE FIELD created_at ON memory_fact TYPE datetime DEFAULT time::now();
 DEFINE INDEX decision_agent  ON decision FIELDS agent;
 DEFINE INDEX action_decision ON action   FIELDS decision;
 DEFINE INDEX outcome_action  ON outcome  FIELDS action;
+
+-- Graph edges (SPEC §4.3 traceability, §6 audit chains). These make the agent
+-- loop traversable as a graph: agent ->made-> decision ->triggered-> action
+-- ->produced-> outcome. Query with arrow syntax, e.g.
+--   SELECT ->made->decision->triggered->action->produced->outcome AS chain
+--   FROM agent:⟨id⟩;
+DEFINE TABLE made      TYPE RELATION FROM agent    TO decision;
+DEFINE TABLE triggered TYPE RELATION FROM decision TO action;
+DEFINE TABLE produced  TYPE RELATION FROM action   TO outcome;
+DEFINE TABLE recalls   TYPE RELATION FROM agent    TO memory_fact;

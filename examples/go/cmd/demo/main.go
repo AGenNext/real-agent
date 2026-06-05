@@ -97,6 +97,25 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Wire the graph edges so the loop is traversable end to end.
+	if _, err := store.Relate(agentRID, decisionRID, agentmem.EdgeMade, nil); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := store.Relate(decisionRID, actionRID, agentmem.EdgeTriggered, nil); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := store.Relate(actionRID, outcomeRID, agentmem.EdgeProduced, nil); err != nil {
+		log.Fatal(err)
+	}
+
 	fmt.Printf("decision %s -> action %s -> outcome %s recorded; memory updated\n",
 		decisionRID, actionRID, outcomeRID)
+
+	// Walk the graph back from the agent to verify the chain.
+	trace, err := store.TraceAgent(agentID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("graph trace for %s: %d decision(s), %d action(s), %d outcome(s)\n",
+		agentID, len(trace.Decisions), len(trace.Actions), len(trace.Outcomes))
 }

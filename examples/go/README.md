@@ -51,3 +51,23 @@ decision decision:⟨id⟩ -> action action:⟨id⟩ -> outcome outcome:⟨id⟩
 | §4.5 Action | `action` | `RecordAction` |
 | §4.6 Outcome | `outcome` | `RecordOutcome` |
 | §4.7 Memory | `memory_fact` | `RememberFact` |
+
+## Graph traversal
+
+The agent loop is also modelled as SurrealDB graph edges, so it can be walked
+as a chain (SPEC §4.3 traceability, §6 audit):
+
+```
+agent ->made-> decision ->triggered-> action ->produced-> outcome
+```
+
+- `Store.Relate(in, out, edge, data)` creates an edge (`made`/`triggered`/`produced`/`recalls`).
+- `Store.TraceAgent(id)` walks the edges and returns every reachable decision,
+  action, and outcome.
+
+Equivalent SurrealQL:
+
+```surql
+SELECT ->made->decision->triggered->action->produced->outcome AS chain
+FROM agent:agent-demo-001;
+```

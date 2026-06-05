@@ -164,3 +164,58 @@ func (s *Store) RememberFact(agentID, key string, value any, source string) erro
 	}
 	return nil
 }
+
+// Graph edge names connecting the agent loop (see schemas/memory.surql).
+const (
+	EdgeMade      = "made"      // agent    -> decision
+	EdgeTriggered = "triggered" // decision -> action
+	EdgeProduced  = "produced"  // action   -> outcome
+	EdgeRecalls   = "recalls"   // agent    -> memory_fact
+)
+
+// Relate creates a graph edge `in -> relation -> out`, optionally carrying edge
+// metadata (SPEC §4.3 traceability). Returns the edge's record id.
+func (s *Store) Relate(in, out models.RecordID, relation string, data map[string]any) (models.RecordID, error) {
+	rel := surrealdb.Relationship{
+		In:       in,
+		Out:      out,
+		Relation: models.Table(relation),
+		Data:     data,
+	}
+	if err := surrealdb.Relate(s.db, &rel); err != nil {
+		return models.RecordID{}, fmt.Errorf("agentmem: relate %s: %w", relation, err)
+	}
+	if rel.ID != nil {
+		return *rel.ID, nil
+	}
+	return models.RecordID{}, nil
+}
+
+// AgentTrace is a flattened view of an agent's decision graph, gathered by
+// walking the made/triggered/produced edges.
+type AgentTrace struct {
+	Decisions []models.RecordID `json:"decisions"`
+	Actions   []models.RecordID `json:"actions"`
+	Outcomes  []models.RecordID `json:"outcomes"`
+}
+
+// TraceAgent walks the graph from an agent and returns every decision, action,
+// and outcome reachable through the made/triggered/produced edges (SPEC §6).
+func (s *Store) TraceAgent(agentID string) (*AgentTrace, error) {
+	rid := models.NewRecordID("agent", agentID)
+	res, err := surrealdb.Query[[]AgentTrace](s.db, `
+		SELECT
+			->made->decision AS decisions,
+			->made->decision->triggered->action AS actions,
+			->made->decision->triggered->action->produced->outcome AS outcomes
+		FROM $agent`,
+		map[string]any{"agent": rid})
+	if err != nil {
+		return nil, fmt.Errorf("agentmem: trace agent: %w", err)
+	}
+	if res == nil || len(*res) == 0 || len((*res)[0].Result) == 0 {
+		return &AgentTrace{}, nil
+	}
+	trace := (*res)[0].Result[0]
+	return &trace, nil
+}
