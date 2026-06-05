@@ -101,6 +101,18 @@ go run ./cmd/agentc examples/cluster-janitor.agent > agent.json
 # validate (any JSON Schema 2020-12 validator)
 ```
 
+## Two reference parsers (side by side)
+
+The language has two reference implementations, both parsing the same `.agent` files:
+
+| Parser | Where | Notes |
+|---|---|---|
+| Go (`agentc`) | `reference/agent-lang/` | hand-written; compiles `.agent` → `agent.schema.json` JSON; verified against the schema |
+| Langium grammar | `reference/agent-lang/langium/` | formal grammar ([langium.org](https://langium.org)); generates parser + AST + LSP scaffolding; verified parsing the example with 0 errors |
+
+Langium is the TypeScript successor to Eclipse Xtext — using it keeps the
+grammar in a standard, tool-supported form.
+
 ## Relationship to `proto/`
 
 This DSL targets the **JSON Schema** contract (`agent.schema.json`). The

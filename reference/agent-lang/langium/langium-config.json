@@ -1,0 +1,9 @@
+{
+  "projectName": "AgentLang",
+  "languages": [{
+    "id": "agent-lang",
+    "grammar": "src/agent.langium",
+    "fileExtensions": [".agent"]
+  }],
+  "out": "src/generated"
+}

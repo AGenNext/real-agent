@@ -1,0 +1,11 @@
+{
+  "name": "agent-lang-langium",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "langium:generate": "langium generate",
+    "test": "tsx src/parse-test.ts"
+  },
+  "dependencies": { "langium": "^3.3.0" },
+  "devDependencies": { "langium-cli": "^3.3.0", "tsx": "^4.19.0", "typescript": "^5.6.0" }
+}
