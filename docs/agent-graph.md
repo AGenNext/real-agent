@@ -10,7 +10,7 @@ Diagrams render inline on GitHub.
 
 The causal chain the spec requires — every pass produces a decision record
 (SPEC §6) — modelled as the SurrealDB graph edges in
-[`schemas/memory.surql`](../schemas/memory.surql).
+[`reference/surrealdb/memory.surql`](../reference/surrealdb/memory.surql).
 
 ```mermaid
 graph LR

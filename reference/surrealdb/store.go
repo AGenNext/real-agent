@@ -1,5 +1,5 @@
 // Package agentmem is a reference Go implementation of the Real Agent memory
-// store, backed by SurrealDB (see schemas/memory.surql).
+// store, backed by SurrealDB (see memory.surql).
 //
 // It satisfies the spec's memory and decision-record requirements:
 //   - SPEC §4.1 Identity        -> UpsertAgent
@@ -186,7 +186,7 @@ func (s *Store) RememberFact(agentID, key string, value any, source string) erro
 	return nil
 }
 
-// Graph edge names connecting the agent loop (see schemas/memory.surql).
+// Graph edge names connecting the agent loop (see memory.surql).
 const (
 	EdgeMade      = "made"      // agent    -> decision
 	EdgeTriggered = "triggered" // decision -> action
@@ -279,7 +279,7 @@ func (s *Store) RememberProcedure(agentID, name string, steps []string) (models.
 
 // Knowledge is a unit of retrievable semantic memory for RAG. Embedding is the
 // vector produced by an embedding model; its length must match the knowledge
-// index DIMENSION (see schemas/memory.surql).
+// index DIMENSION (see memory.surql).
 type Knowledge struct {
 	Content   string         `json:"content"`
 	Embedding []float64      `json:"embedding"`

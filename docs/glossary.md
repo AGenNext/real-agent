@@ -125,7 +125,7 @@ The memory types an agent may maintain (`agent.schema.json` `memory`; SPEC §4.7
 
 ## 6. Graph terms
 
-Terms from the SurrealDB graph model ([`schemas/memory.surql`](../schemas/memory.surql); [agent-graph.md](./agent-graph.md)).
+Terms from the SurrealDB graph model ([`reference/surrealdb/memory.surql`](../reference/surrealdb/memory.surql); [agent-graph.md](./agent-graph.md)).
 
 | Term | Definition |
 |---|---|
@@ -166,4 +166,4 @@ Canonical events; every meaningful state change should be expressible as one (ON
 | **Protocol** | Defines *how* records are exchanged (`proto/`, schemas). |
 | **Ontology** | Defines *how the concepts relate* (ONTOLOGY.md). |
 | **Contract** | The machine-readable agent definition (`agent.schema.json`). |
-| **Reference implementation** | A non-normative example (`examples/go`, `schemas/memory.surql`). |
+| **Reference implementation** | A non-normative example (`reference/surrealdb/`). |
