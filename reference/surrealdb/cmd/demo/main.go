@@ -20,7 +20,7 @@ import (
 	"log"
 	"os"
 
-	agentmem "github.com/AGenNext/real-agent/examples/go"
+	agentmem "github.com/AGenNext/real-agent/reference/surrealdb"
 )
 
 func env(key, fallback string) string {

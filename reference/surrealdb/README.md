@@ -12,22 +12,22 @@ decision-record requirements, backed by SurrealDB.
 |------|---------|
 | `store.go` | `agentmem` package — typed store: agents, decisions, actions, outcomes, memory facts |
 | `cmd/demo/main.go` | Runs one full agent loop (Decide → Act → Outcome → Memory) |
-| `../../schemas/memory.surql` | SurrealQL schema the store writes against |
-| `../../deploy/surrealdb.yaml` | SurrealDB deployment for k3s |
+| `memory.surql` | SurrealQL schema the store writes against |
+| `deploy.yaml` | SurrealDB deployment for k3s |
 
 ## Run
 
 ```bash
 # 1. Deploy SurrealDB via the official Helm chart (edit the password first).
 #    k3s's Helm controller reconciles this HelmChart resource for you.
-kubectl apply -f ../../deploy/surrealdb.yaml
+kubectl apply -f deploy.yaml
 kubectl -n database wait --for=condition=ready pod \
   -l app.kubernetes.io/name=surrealdb --timeout=180s
 
 # 2. Load the schema
 kubectl -n database port-forward svc/surrealdb 8000:8000 &
-surreal import --conn http://localhost:8000 --user root --pass change-me-please \
-  --ns real_agent --db memory ../../schemas/memory.surql
+surreal sql -e http://localhost:8000 -u root -p change-me-please \
+  --ns real_agent --db memory < memory.surql
 
 # 3. Run the demo
 export SURREAL_ENDPOINT="ws://localhost:8000/rpc"

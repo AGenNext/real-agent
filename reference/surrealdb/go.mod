@@ -1,4 +1,4 @@
-module github.com/AGenNext/real-agent/examples/go
+module github.com/AGenNext/real-agent/reference/surrealdb
 
 go 1.24
 
