@@ -121,3 +121,30 @@ DEFINE FIELD source     ON knowledge TYPE option<string>;
 DEFINE FIELD created_at ON knowledge TYPE datetime DEFAULT ALWAYS time::now();
 DEFINE INDEX knowledge_vec ON knowledge
     FIELDS embedding HNSW DIMENSION 1536 DIST COSINE TYPE F32;
+
+-- ---------------------------------------------------------------------------
+-- Organisation-backed, trustworthy agent teams.
+-- A vendor-neutral organisation backs teams; a team has member agents; trust
+-- is recorded per (team, agent). Multiple agents, one runtime, governed home.
+--   organization -backs->  team
+--   team         -member-> agent
+--   team         -trusts-> agent   (edge fields: score, context)
+-- ---------------------------------------------------------------------------
+DEFINE TABLE organization SCHEMAFULL;
+DEFINE FIELD name           ON organization TYPE string;
+DEFINE FIELD vendor_neutral ON organization TYPE bool DEFAULT true;
+DEFINE FIELD governance     ON organization TYPE option<string>;
+DEFINE FIELD created_at     ON organization TYPE datetime DEFAULT ALWAYS time::now();
+
+DEFINE TABLE team SCHEMAFULL;
+DEFINE FIELD name         ON team TYPE string;
+DEFINE FIELD organization ON team TYPE record<organization>;
+DEFINE FIELD objective    ON team TYPE option<string>;
+DEFINE FIELD created_at   ON team TYPE datetime DEFAULT ALWAYS time::now();
+
+-- Graph edges. Relations are schemaless so `trusts` can carry score/context.
+DEFINE TABLE backs  TYPE RELATION FROM organization TO team;
+DEFINE TABLE member TYPE RELATION FROM team         TO agent;
+DEFINE TABLE trusts TYPE RELATION FROM team         TO agent;
+
+DEFINE INDEX team_org ON team FIELDS organization;

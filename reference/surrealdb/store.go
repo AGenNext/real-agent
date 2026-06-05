@@ -332,3 +332,73 @@ func (s *Store) SearchKnowledge(query []float64, k int) ([]KnowledgeHit, error) 
 	}
 	return (*res)[0].Result, nil
 }
+
+// ---------------------------------------------------------------------------
+// Organisation-backed, trustworthy agent teams (see memory.surql).
+//   organization -backs-> team -member-> agent ; team -trusts-> agent {score}
+// ---------------------------------------------------------------------------
+
+// UpsertOrganization inserts or updates a (vendor-neutral) backing organisation.
+func (s *Store) UpsertOrganization(id, name string, vendorNeutral bool, governance string) (models.RecordID, error) {
+	data := map[string]any{"name": name, "vendor_neutral": vendorNeutral}
+	if governance != "" {
+		data["governance"] = governance
+	}
+	res, err := surrealdb.Upsert[record](s.db, models.NewRecordID("organization", id), data)
+	if err != nil {
+		return models.RecordID{}, fmt.Errorf("agentmem: upsert organization: %w", err)
+	}
+	return res.ID, nil
+}
+
+// UpsertTeam inserts or updates a team belonging to an organisation.
+func (s *Store) UpsertTeam(id, name, orgID, objective string) (models.RecordID, error) {
+	data := map[string]any{
+		"name":         name,
+		"organization": models.NewRecordID("organization", orgID),
+	}
+	if objective != "" {
+		data["objective"] = objective
+	}
+	res, err := surrealdb.Upsert[record](s.db, models.NewRecordID("team", id), data)
+	if err != nil {
+		return models.RecordID{}, fmt.Errorf("agentmem: upsert team: %w", err)
+	}
+	return res.ID, nil
+}
+
+// BackTeam records that an organisation backs a team.
+func (s *Store) BackTeam(orgID, teamID string) (models.RecordID, error) {
+	return s.Relate(models.NewRecordID("organization", orgID), models.NewRecordID("team", teamID), "backs", nil)
+}
+
+// AddTeamMember adds an agent to a team.
+func (s *Store) AddTeamMember(teamID, agentID string) (models.RecordID, error) {
+	return s.Relate(models.NewRecordID("team", teamID), models.NewRecordID("agent", agentID), "member", nil)
+}
+
+// SetTrust records a team's trust in an agent (score in [0,1], optional context).
+func (s *Store) SetTrust(teamID, agentID string, score float64, context string) (models.RecordID, error) {
+	data := map[string]any{"score": score}
+	if context != "" {
+		data["context"] = context
+	}
+	return s.Relate(models.NewRecordID("team", teamID), models.NewRecordID("agent", agentID), "trusts", data)
+}
+
+// TeamRoster returns the agent ids that are members of a team (graph walk).
+func (s *Store) TeamRoster(teamID string) ([]models.RecordID, error) {
+	type row struct {
+		Members []models.RecordID `json:"members"`
+	}
+	res, err := surrealdb.Query[[]row](s.db,
+		`SELECT ->member->agent AS members FROM $team`,
+		map[string]any{"team": models.NewRecordID("team", teamID)})
+	if err != nil {
+		return nil, fmt.Errorf("agentmem: team roster: %w", err)
+	}
+	if res == nil || len(*res) == 0 || len((*res)[0].Result) == 0 {
+		return nil, nil
+	}
+	return (*res)[0].Result[0].Members, nil
+}
