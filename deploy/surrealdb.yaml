@@ -1,0 +1,49 @@
+# SurrealDB on k3s via the official Helm chart, installed through k3s's built-in
+# Helm controller (helm.cattle.io/v1 HelmChart) — the same mechanism k3s uses to
+# install Traefik. No local `helm` CLI required: apply this and the cluster
+# reconciles it.
+#
+#   kubectl apply -f deploy/surrealdb.yaml
+#   kubectl -n database get pods -l app.kubernetes.io/name=surrealdb -w
+#
+# Endpoint inside the cluster (release name "surrealdb"):
+#   ws://surrealdb.database.svc.cluster.local:8000/rpc
+#
+# Plain `helm` equivalent (non-k3s clusters):
+#   helm repo add surrealdb https://helm.surrealdb.com
+#   helm repo update
+#   helm install surrealdb surrealdb/surrealdb -n database --create-namespace \
+#     --set image.tag=v3.1.3 \
+#     --set persistence.enabled=true \
+#     --set persistence.size=5Gi \
+#     --set persistence.storageClassName=local-path \
+#     --set surrealdb.initial_user=root \
+#     --set surrealdb.initial_pass=change-me-please
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: surrealdb
+  namespace: kube-system            # k3s helm-controller reconciles HelmCharts here
+spec:
+  repo: https://helm.surrealdb.com
+  chart: surrealdb
+  # version: ""                     # pin a chart version for reproducibility
+  targetNamespace: database
+  createNamespace: true
+  valuesContent: |-
+    replicaCount: 1
+    image:
+      repository: surrealdb/surrealdb
+      tag: v3.1.3
+    persistence:
+      enabled: true                 # switches the backing store to file:/data
+      size: 5Gi
+      storageClassName: local-path  # k3s default storage class
+    service:
+      port: 8000
+    surrealdb:
+      # Bootstrap root credentials. Used only on first install — change this,
+      # and you may remove these two lines after the database is initialised.
+      initial_user: root
+      initial_pass: change-me-please
+      log: info
