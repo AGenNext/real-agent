@@ -106,3 +106,24 @@ for _, h := range hits {
 
 > The `knowledge` index `DIMENSION` (1536) must match your embedding model;
 > edit it in `schemas/memory.surql` if you use a different one.
+
+## Organisation-backed agent teams
+
+Multiple agents organised into trustworthy teams under a vendor-neutral
+organisation (`memory.surql`):
+
+```
+organization -backs-> team -member-> agent
+team -trusts-> agent   (edge carries score + context)
+```
+
+| Concept | Go method |
+|---|---|
+| Organisation | `UpsertOrganization(id, name, vendorNeutral, governance)` |
+| Team | `UpsertTeam(id, name, orgID, objective)` |
+| Backing | `BackTeam(orgID, teamID)` |
+| Membership | `AddTeamMember(teamID, agentID)` |
+| Trust | `SetTrust(teamID, agentID, score, context)` |
+| Roster (graph walk) | `TeamRoster(teamID)` |
+
+Verified end-to-end against a live SurrealDB.

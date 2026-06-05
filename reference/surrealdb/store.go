@@ -332,3 +332,160 @@ func (s *Store) SearchKnowledge(query []float64, k int) ([]KnowledgeHit, error) 
 	}
 	return (*res)[0].Result, nil
 }
+
+// ---------------------------------------------------------------------------
+// Organisation-backed, trustworthy agent teams (see memory.surql).
+//   organization -backs-> team -member-> agent ; team -trusts-> agent {score}
+// ---------------------------------------------------------------------------
+
+// UpsertOrganization inserts or updates a (vendor-neutral) backing organisation.
+func (s *Store) UpsertOrganization(id, name string, vendorNeutral bool, governance string) (models.RecordID, error) {
+	data := map[string]any{"name": name, "vendor_neutral": vendorNeutral}
+	if governance != "" {
+		data["governance"] = governance
+	}
+	res, err := surrealdb.Upsert[record](s.db, models.NewRecordID("organization", id), data)
+	if err != nil {
+		return models.RecordID{}, fmt.Errorf("agentmem: upsert organization: %w", err)
+	}
+	return res.ID, nil
+}
+
+// UpsertTeam inserts or updates a team belonging to an organisation.
+func (s *Store) UpsertTeam(id, name, orgID, objective string) (models.RecordID, error) {
+	data := map[string]any{
+		"name":         name,
+		"organization": models.NewRecordID("organization", orgID),
+	}
+	if objective != "" {
+		data["objective"] = objective
+	}
+	res, err := surrealdb.Upsert[record](s.db, models.NewRecordID("team", id), data)
+	if err != nil {
+		return models.RecordID{}, fmt.Errorf("agentmem: upsert team: %w", err)
+	}
+	return res.ID, nil
+}
+
+// BackTeam records that an organisation backs a team.
+func (s *Store) BackTeam(orgID, teamID string) (models.RecordID, error) {
+	return s.Relate(models.NewRecordID("organization", orgID), models.NewRecordID("team", teamID), "backs", nil)
+}
+
+// AddTeamMember adds an agent to a team.
+func (s *Store) AddTeamMember(teamID, agentID string) (models.RecordID, error) {
+	return s.Relate(models.NewRecordID("team", teamID), models.NewRecordID("agent", agentID), "member", nil)
+}
+
+// SetTrust records a team's trust in an agent (score in [0,1], optional context).
+func (s *Store) SetTrust(teamID, agentID string, score float64, context string) (models.RecordID, error) {
+	data := map[string]any{"score": score}
+	if context != "" {
+		data["context"] = context
+	}
+	return s.Relate(models.NewRecordID("team", teamID), models.NewRecordID("agent", agentID), "trusts", data)
+}
+
+// TeamRoster returns the agent ids that are members of a team (graph walk).
+func (s *Store) TeamRoster(teamID string) ([]models.RecordID, error) {
+	type row struct {
+		Members []models.RecordID `json:"members"`
+	}
+	res, err := surrealdb.Query[[]row](s.db,
+		`SELECT ->member->agent AS members FROM $team`,
+		map[string]any{"team": models.NewRecordID("team", teamID)})
+	if err != nil {
+		return nil, fmt.Errorf("agentmem: team roster: %w", err)
+	}
+	if res == nil || len(*res) == 0 || len((*res)[0].Result) == 0 {
+		return nil, nil
+	}
+	return (*res)[0].Result[0].Members, nil
+}
+
+// Trust formula (see docs/trust-score.md). Trust is ALWAYS calculated from
+// recorded outcomes, never inferred or asserted. Laplace-smoothed weighted
+// success rate, so small samples stay near a neutral prior:
+//
+//	trust = ( Σ w_i + α ) / ( N + α + β )
+//
+// w_i is the outcome weight (success=1, partial=0.5, failure=0), N is the
+// number of outcomes, α = β = 1 are prior pseudo-counts (neutral prior 0.5).
+const (
+	trustPriorSuccess = 1.0 // α
+	trustPriorFailure = 1.0 // β
+)
+
+// outcomeWeight maps an outcome status to its trust contribution.
+func outcomeWeight(status string) float64 {
+	switch status {
+	case "success":
+		return 1.0
+	case "partial":
+		return 0.5
+	default: // failure (and anything unknown) contributes 0
+		return 0.0
+	}
+}
+
+// ComputeTrust derives a trust score in [0,1] for an agent from its outcome
+// history (SPEC: Trust is informed by Outcome), by walking the agent's graph to
+// every produced outcome and applying the smoothed formula above. It also
+// returns the source outcome ids the score was calculated from, so trust is
+// anchored to its evidence (no sources => no evidence => neutral 0.5).
+func (s *Store) ComputeTrust(agentID string) (float64, []models.RecordID, error) {
+	type row struct {
+		Statuses []string          `json:"statuses"`
+		Sources  []models.RecordID `json:"sources"`
+	}
+	res, err := surrealdb.Query[[]row](s.db,
+		`SELECT
+			->made->decision->triggered->action->produced->outcome.status AS statuses,
+			->made->decision->triggered->action->produced->outcome.id     AS sources
+		 FROM $agent`,
+		map[string]any{"agent": models.NewRecordID("agent", agentID)})
+	if err != nil {
+		return 0, nil, fmt.Errorf("agentmem: compute trust: %w", err)
+	}
+	var statuses []string
+	var sources []models.RecordID
+	if res != nil && len(*res) > 0 && len((*res)[0].Result) > 0 {
+		statuses = (*res)[0].Result[0].Statuses
+		sources = (*res)[0].Result[0].Sources
+	}
+	weighted := 0.0
+	for _, st := range statuses {
+		weighted += outcomeWeight(st)
+	}
+	n := len(statuses)
+	score := (weighted + trustPriorSuccess) / (float64(n) + trustPriorSuccess + trustPriorFailure)
+	return score, sources, nil
+}
+
+// UpdateTrustFromOutcomes computes an agent's trust from its outcomes and, if
+// there is evidence, records it on the team's trusts edge together with the
+// source outcome ids it was calculated from — so the recorded trust is
+// reproducible and auditable, never inferred. Returns the score.
+func (s *Store) UpdateTrustFromOutcomes(teamID, agentID string) (float64, error) {
+	score, sources, err := s.ComputeTrust(agentID)
+	if err != nil {
+		return 0, err
+	}
+	if len(sources) == 0 {
+		return 0, nil // no evidence — leave trust unset
+	}
+	_, err = s.Relate(
+		models.NewRecordID("team", teamID),
+		models.NewRecordID("agent", agentID),
+		"trusts",
+		map[string]any{
+			"score":   score,
+			"sources": sources,
+			"context": fmt.Sprintf("computed from %d outcome(s)", len(sources)),
+		},
+	)
+	if err != nil {
+		return 0, err
+	}
+	return score, nil
+}
