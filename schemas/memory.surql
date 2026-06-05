@@ -86,3 +86,38 @@ DEFINE TABLE made      TYPE RELATION FROM agent    TO decision;
 DEFINE TABLE triggered TYPE RELATION FROM decision TO action;
 DEFINE TABLE produced  TYPE RELATION FROM action   TO outcome;
 DEFINE TABLE recalls   TYPE RELATION FROM agent    TO memory_fact;
+
+-- ---------------------------------------------------------------------------
+-- Memory layers (SPEC §4.7). The four memory types, built layer by layer:
+--   working    -> working_memory  (transient current-task state)
+--   episodic   -> decision/action/outcome (above)
+--   semantic   -> memory_fact (above, key/value) + knowledge (vector/RAG)
+--   procedural -> procedure      (playbooks / skills / routines)
+-- ---------------------------------------------------------------------------
+
+-- Working memory: transient state for the active task, keyed [agent, task].
+DEFINE TABLE working_memory SCHEMAFULL;
+DEFINE FIELD agent      ON working_memory TYPE record<agent>;
+DEFINE FIELD task       ON working_memory TYPE string;
+DEFINE FIELD state      ON working_memory FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD updated_at ON working_memory TYPE datetime DEFAULT time::now();
+
+-- Procedural memory: named, ordered playbooks the agent can follow.
+DEFINE TABLE procedure SCHEMAFULL;
+DEFINE FIELD agent      ON procedure TYPE record<agent>;
+DEFINE FIELD name       ON procedure TYPE string;
+DEFINE FIELD steps      ON procedure TYPE array DEFAULT [];
+DEFINE FIELD created_at ON procedure TYPE datetime DEFAULT time::now();
+
+-- Knowledge: retrievable semantic memory for RAG. `embedding` holds the vector
+-- produced by an embedding model; the HNSW index enables k-NN similarity search.
+-- DIMENSION must match the embedding model (1536 = OpenAI text-embedding-3-small).
+DEFINE TABLE knowledge SCHEMAFULL;
+DEFINE FIELD agent      ON knowledge TYPE record<agent>;
+DEFINE FIELD content    ON knowledge TYPE string;
+DEFINE FIELD embedding  ON knowledge TYPE array<float>;
+DEFINE FIELD metadata   ON knowledge FLEXIBLE TYPE option<object>;
+DEFINE FIELD source     ON knowledge TYPE option<string>;
+DEFINE FIELD created_at ON knowledge TYPE datetime DEFAULT time::now();
+DEFINE INDEX knowledge_vec ON knowledge
+    FIELDS embedding HNSW DIMENSION 1536 DIST COSINE TYPE F32;
