@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Security &amp; Governance — Real Agent</title>
+    <meta name="description" content="Governance, security, and trust as core to Real Agent: deny-by-default policy, approval gates, authenticated principals, and trust-driven suspension." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="wrap nav__inner">
+        <a class="brand" href="index.html"><span class="brand__mark" aria-hidden="true"></span> Real&nbsp;Agent</a>
+        <nav class="nav__links" aria-label="Primary">
+          <a href="platform.html">Platform</a>
+          <a href="teams.html">Multi-team</a>
+          <a href="security.html">Security</a>
+          <a class="btn btn--ghost" href="https://github.com/AGenNext/real-agent">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="subhero">
+        <div class="wrap">
+          <p class="eyebrow">Security &amp; Governance</p>
+          <h1>Policy overrides intelligence.</h1>
+          <p class="lede">The model may reason and the runtime may execute — but policy defines what is allowed, denied, escalated, approved, reversed, and logged.</p>
+        </div>
+      </section>
+
+      <section class="prose">
+        <div class="wrap">
+          <p class="eyebrow">Governance</p>
+          <h2>Accountable by construction.</h2>
+          <div class="pillar"><h3>Governed lifecycle</h3><p>Draft → Registered → Approved → Active → … with forbidden transitions rejected. No agent goes straight to Active.</p></div>
+          <div class="pillar"><h3>Deny-by-default</h3><p>An action runs only if it's inside the contract, authorized, policy-allowed, approved where required, and auditable.</p></div>
+          <div class="pillar"><h3>Approval gates</h3><p>High-risk actions can't execute until a human (or delegated approver) approves — recorded in the audit log.</p></div>
+          <div class="pillar"><h3>Suspension / kill switch</h3><p>Any governed agent can be suspended on policy breach, incident, or trust failure.</p></div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="wrap">
+          <p class="eyebrow">Security</p>
+          <h2>Authority is not capability.</h2>
+          <div class="grid grid--3">
+            <div class="card"><h3>Authenticated principals</h3><p>Every governed action is attributable to an authenticated actor — never anonymous unless explicitly allowed.</p></div>
+            <div class="card"><h3>Scoped access</h3><p>Authority, tool access, and data classification bound what an agent can touch — independent of what it's capable of.</p></div>
+            <div class="card"><h3>Fail closed</h3><p>When policy is unavailable, the agent denies rather than guesses.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="prose">
+        <div class="wrap">
+          <p class="eyebrow">Trust</p>
+          <h2>Earned, measured, and revocable.</h2>
+          <p class="kicker">Trust is an evaluated property, not a vibe — measured across identity, capability, policy, behavioral, operational, and outcome dimensions. As outcomes accumulate, autonomy adjusts; when trust drops below threshold, the agent suspends automatically.</p>
+          <div class="grid grid--3">
+            <div class="card"><h3>Evidence-backed</h3><p>Every trust score is backed by retained evaluation evidence.</p></div>
+            <div class="card"><h3>Contextual</h3><p>Trusted to summarize invoices is not trusted to approve payments.</p></div>
+            <div class="card"><h3>Append-only audit</h3><p>Decisions, actions, outcomes, and trust updates are an immutable record.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta">
+        <div class="wrap cta__inner">
+          <h2>Governed digital workers, not loose automation.</h2>
+          <div class="hero__cta"><a class="btn btn--primary" href="https://github.com/AGenNext/real-agent">Read the governance spec</a></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap foot__inner">
+        <span>Real Agent — the enterprise agent platform</span>
+        <a href="https://github.com/AGenNext/real-agent">github.com/AGenNext/real-agent</a>
+      </div>
+    </footer>
+  </body>
+</html>

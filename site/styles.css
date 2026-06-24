@@ -161,3 +161,22 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 520px) {
   .grid--4 { grid-template-columns: 1fr; }
 }
+
+/* --- Sub-pages (marketing) --- */
+.subhero {
+  background: radial-gradient(900px 380px at 78% -20%, rgba(22, 196, 201, 0.16), transparent 60%),
+    linear-gradient(180deg, var(--ink) 0%, #11183a 100%);
+  color: #eef1fb; padding: 72px 0 56px;
+}
+.subhero h1 { color: #fff; max-width: 20ch; font-size: clamp(1.9rem, 3.6vw, 2.8rem); }
+.subhero .lede { margin-bottom: 0; }
+.prose { padding: 72px 0; }
+.prose + .prose { padding-top: 0; }
+.prose h2 { margin-top: 0; }
+.prose p, .prose li { color: var(--ink-2); }
+.measure { max-width: 64ch; }
+.kicker { color: var(--slate); font-size: 1.05rem; max-width: 62ch; }
+.pillar { display: grid; grid-template-columns: 200px 1fr; gap: 22px; padding: 22px 0; border-top: 1px solid var(--line); }
+.pillar h3 { margin: 0; }
+.pillar p { margin: 0; color: var(--slate); }
+@media (max-width: 720px) { .pillar { grid-template-columns: 1fr; gap: 8px; } }
