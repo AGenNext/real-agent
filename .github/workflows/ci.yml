@@ -38,8 +38,8 @@ jobs:
       - name: Validate JSON Schemas and JSON-LD vocabulary
         run: |
           python3 - <<'PY'
-          import json, glob, sys
-          files = glob.glob("schemas/*.json") + ["vocab/real-agent.jsonld"]
+          import json, glob
+          files = glob.glob("schemas/*.json") + glob.glob("config/*.json") + ["vocab/real-agent.jsonld"]
           for f in files:
               json.load(open(f))
               print("ok", f)
