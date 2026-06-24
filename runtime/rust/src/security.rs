@@ -12,12 +12,18 @@ pub struct Principal {
 
 impl Principal {
     pub fn new(provider: &str, subject: &str) -> Self {
-        Principal { provider: provider.to_string(), subject: subject.to_string() }
+        Principal {
+            provider: provider.to_string(),
+            subject: subject.to_string(),
+        }
     }
 
     /// An unauthenticated caller.
     pub fn anonymous() -> Self {
-        Principal { provider: String::new(), subject: String::new() }
+        Principal {
+            provider: String::new(),
+            subject: String::new(),
+        }
     }
 
     pub fn is_anonymous(&self) -> bool {
@@ -43,7 +49,10 @@ impl Security {
             return Err("authentication required");
         }
         if self.authorization_required
-            && !self.allowed_identity_providers.iter().any(|p| p == &principal.provider)
+            && !self
+                .allowed_identity_providers
+                .iter()
+                .any(|p| p == &principal.provider)
         {
             return Err("identity provider not authorized");
         }

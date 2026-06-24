@@ -150,7 +150,9 @@ impl<S: Store> Runtime<S> {
     }
 
     pub fn agent(&self, id: &str) -> Result<Agent> {
-        self.store.get_agent(id).ok_or_else(|| RuntimeError::UnknownAgent(id.to_string()))
+        self.store
+            .get_agent(id)
+            .ok_or_else(|| RuntimeError::UnknownAgent(id.to_string()))
     }
 
     /// Move an agent through a governed lifecycle transition.
@@ -236,6 +238,7 @@ impl<S: Store> Runtime<S> {
     }
 
     /// Record a decision grounded in observed context. Requires the agent Active.
+    #[allow(clippy::too_many_arguments)]
     pub fn record_decision(
         &mut self,
         agent_id: &str,
@@ -294,7 +297,10 @@ impl<S: Store> Runtime<S> {
             return Err(RuntimeError::NotActive(agent.lifecycle_state));
         }
         // Security is core: the principal must satisfy the agent's posture.
-        agent.security.check(principal).map_err(RuntimeError::SecurityDenied)?;
+        agent
+            .security
+            .check(principal)
+            .map_err(RuntimeError::SecurityDenied)?;
         let tool = self
             .store
             .get_tool(tool_id)
@@ -406,7 +412,10 @@ impl<S: Store> Runtime<S> {
         self.store.put_evaluation(evaluation.clone());
         self.emit(EventKind::EvaluationRecorded, agent_id, &id);
 
-        agent.trust = Trust { score: trust_score, state: TrustState::from_score(trust_score) };
+        agent.trust = Trust {
+            score: trust_score,
+            state: TrustState::from_score(trust_score),
+        };
         let active = agent.lifecycle_state == LifecycleState::Active;
         self.store.put_agent(agent);
         self.emit(EventKind::TrustUpdated, agent_id, &id);
@@ -453,7 +462,11 @@ impl<S: Store> Runtime<S> {
                 Recall { record, score }
             })
             .collect();
-        hits.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
+        hits.sort_by(|a, b| {
+            b.score
+                .partial_cmp(&a.score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
         hits.truncate(k);
         hits
     }
@@ -484,7 +497,13 @@ impl<S: Store> Runtime<S> {
     }
 
     /// Set the agent's ephemeral working state for a task.
-    pub fn set_working(&mut self, agent_id: &str, task: &str, state: &str, ttl_ms: Millis) -> Result<()> {
+    pub fn set_working(
+        &mut self,
+        agent_id: &str,
+        task: &str,
+        state: &str,
+        ttl_ms: Millis,
+    ) -> Result<()> {
         let _ = self.agent(agent_id)?;
         let expires_at = self.now() + ttl_ms;
         self.store.set_working(WorkingMemory {
@@ -502,6 +521,10 @@ impl<S: Store> Runtime<S> {
 
     /// Episodic memory: the agent's slice of the append-only event log.
     pub fn episodic(&self, agent_id: &str) -> Vec<Event> {
-        self.store.events().into_iter().filter(|e| e.agent_id == agent_id).collect()
+        self.store
+            .events()
+            .into_iter()
+            .filter(|e| e.agent_id == agent_id)
+            .collect()
     }
 }

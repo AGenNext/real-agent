@@ -42,7 +42,10 @@ fn decide(rt: &mut Runtime<MemoryStore>, agent_id: &str) -> String {
         "s",
         "r",
         0.9,
-        PolicyResult { decision: PolicyDecision::Allow, reason: "ok".into() },
+        PolicyResult {
+            decision: PolicyDecision::Allow,
+            reason: "ok".into(),
+        },
     )
     .unwrap()
     .id
@@ -50,7 +53,10 @@ fn decide(rt: &mut Runtime<MemoryStore>, agent_id: &str) -> String {
 
 #[test]
 fn authentication_required_blocks_anonymous() {
-    let sec = Security { authentication_required: true, ..Default::default() };
+    let sec = Security {
+        authentication_required: true,
+        ..Default::default()
+    };
     let (mut rt, id, tool) = setup(sec);
     let d = decide(&mut rt, &id);
     // Anonymous request is denied.
@@ -76,10 +82,14 @@ fn authorization_restricts_identity_provider() {
     // Wrong provider denied.
     assert_eq!(
         rt.request_action_as(&d, &tool, &Principal::new("apikey", "k1")),
-        Err(RuntimeError::SecurityDenied("identity provider not authorized"))
+        Err(RuntimeError::SecurityDenied(
+            "identity provider not authorized"
+        ))
     );
     // Allowed provider passes.
-    assert!(rt.request_action_as(&d, &tool, &Principal::new("oidc", "user:ops")).is_ok());
+    assert!(rt
+        .request_action_as(&d, &tool, &Principal::new("oidc", "user:ops"))
+        .is_ok());
 }
 
 #[test]

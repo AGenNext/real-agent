@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main, claude/relaxed-pasteur-1u4q1]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  rust-core:
+    name: Rust runtime core
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: runtime/rust
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: rustup component add rustfmt clippy
+      - name: Format
+        run: cargo fmt --check
+      - name: Clippy (deny warnings)
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Test
+        run: cargo test
+      - name: Example runs
+        run: cargo run --example agent_loop
+
+  contracts:
+    name: Contract & vocabulary validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JSON Schemas and JSON-LD vocabulary
+        run: |
+          python3 - <<'PY'
+          import json, glob, sys
+          files = glob.glob("schemas/*.json") + ["vocab/real-agent.jsonld"]
+          for f in files:
+              json.load(open(f))
+              print("ok", f)
+          PY
+
+  surrealdb-runtime:
+    name: SurrealDB runtime (import on 3.x)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SurrealDB
+        run: |
+          ver=$(curl -sSL https://api.github.com/repos/surrealdb/surrealdb/releases/latest \
+            | grep -o '"tag_name": *"[^"]*"' | head -1 | sed 's/.*"\(v[^"]*\)".*/\1/')
+          echo "Installing SurrealDB $ver"
+          curl -sSL "https://github.com/surrealdb/surrealdb/releases/download/${ver}/surreal-${ver}.linux-amd64.tgz" | tar xz
+          sudo mv surreal /usr/local/bin/
+          surreal version
+      - name: Import runtime files
+        run: |
+          surreal start --user root --pass root memory --bind 127.0.0.1:8000 &
+          sleep 6
+          for f in bootstrap schema tools memory register functions; do
+            echo "== import $f.surql =="
+            surreal import --endpoint http://127.0.0.1:8000 --user root --pass root \
+              --ns real_agent --db v1 "runtime/surrealdb/$f.surql"
+          done

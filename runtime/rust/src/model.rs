@@ -122,7 +122,10 @@ pub struct Trust {
 
 impl Default for Trust {
     fn default() -> Self {
-        Trust { score: 0.0, state: TrustState::Unknown }
+        Trust {
+            score: 0.0,
+            state: TrustState::Unknown,
+        }
     }
 }
 

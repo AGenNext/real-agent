@@ -26,8 +26,15 @@ fn main() {
             owner: "owner:acme".into(),
             tenant: "acme".into(),
         },
-        Objective { primary: "Keep databases recoverable".into(), ..Default::default() },
-        vec![Capability { id: "cap.export".into(), name: "Export".into(), risk_level: RiskLevel::Low }],
+        Objective {
+            primary: "Keep databases recoverable".into(),
+            ..Default::default()
+        },
+        vec![Capability {
+            id: "cap.export".into(),
+            name: "Export".into(),
+            risk_level: RiskLevel::Low,
+        }],
         Authority::default(),
     );
     let id = agent.identity.id.clone();
@@ -38,7 +45,13 @@ fn main() {
     rt.grant_tool(&id, "tool:export").unwrap();
 
     // Observe -> Decide -> Authorize -> Act -> Evaluate -> Remember.
-    let ctx = rt.observe(&id, "scheduler", "nightly backup window open, billing db idle").unwrap();
+    let ctx = rt
+        .observe(
+            &id,
+            "scheduler",
+            "nightly backup window open, billing db idle",
+        )
+        .unwrap();
     let decision = rt
         .record_decision(
             &id,
@@ -52,13 +65,17 @@ fn main() {
             "alt.export",
             "Nightly window, low risk, reversible",
             0.95,
-            PolicyResult { decision: PolicyDecision::Allow, reason: "within authority".into() },
+            PolicyResult {
+                decision: PolicyDecision::Allow,
+                reason: "within authority".into(),
+            },
         )
         .unwrap();
 
     let action = rt.request_action(&decision.id, "tool:export").unwrap();
     rt.execute_action(&action.id).unwrap();
-    rt.record_outcome(&action.id, true, "export completed, 1.2GB").unwrap();
+    rt.record_outcome(&action.id, true, "export completed, 1.2GB")
+        .unwrap();
     rt.record_evaluation(&id, 0.9).unwrap();
 
     println!("audit log:");
@@ -66,5 +83,8 @@ fn main() {
         println!("  {:>5}  {:<20?}  {}", e.at % 100000, e.kind, e.subject);
     }
     let a = rt.agent(&id).unwrap();
-    println!("agent state: {:?}, trust: {:?} ({:.2})", a.lifecycle_state, a.trust.state, a.trust.score);
+    println!(
+        "agent state: {:?}, trust: {:?} ({:.2})",
+        a.lifecycle_state, a.trust.state, a.trust.score
+    );
 }

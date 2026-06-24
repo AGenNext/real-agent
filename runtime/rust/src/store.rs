@@ -101,7 +101,11 @@ impl Store for MemoryStore {
         self.outcomes.insert(outcome.id.clone(), outcome);
     }
     fn get_outcomes(&self, action_id: &str) -> Vec<Outcome> {
-        self.outcomes.values().filter(|o| o.action_id == action_id).cloned().collect()
+        self.outcomes
+            .values()
+            .filter(|o| o.action_id == action_id)
+            .cloned()
+            .collect()
     }
 
     fn put_evaluation(&mut self, evaluation: Evaluation) {
@@ -112,26 +116,41 @@ impl Store for MemoryStore {
         self.semantic.push(record);
     }
     fn semantic_for(&self, agent_id: &str) -> Vec<SemanticRecord> {
-        self.semantic.iter().filter(|r| r.agent_id == agent_id).cloned().collect()
+        self.semantic
+            .iter()
+            .filter(|r| r.agent_id == agent_id)
+            .cloned()
+            .collect()
     }
     fn put_procedural(&mut self, record: ProceduralRecord) {
         self.procedural.push(record);
     }
     fn procedural_for(&self, agent_id: &str) -> Vec<ProceduralRecord> {
-        self.procedural.iter().filter(|r| r.agent_id == agent_id).cloned().collect()
+        self.procedural
+            .iter()
+            .filter(|r| r.agent_id == agent_id)
+            .cloned()
+            .collect()
     }
     fn set_working(&mut self, working: WorkingMemory) {
-        self.working.insert((working.agent_id.clone(), working.task.clone()), working);
+        self.working
+            .insert((working.agent_id.clone(), working.task.clone()), working);
     }
     fn get_working(&self, agent_id: &str, task: &str) -> Option<WorkingMemory> {
-        self.working.get(&(agent_id.to_string(), task.to_string())).cloned()
+        self.working
+            .get(&(agent_id.to_string(), task.to_string()))
+            .cloned()
     }
 
     fn put_context(&mut self, item: ContextItem) {
         self.context.push(item);
     }
     fn context_for(&self, agent_id: &str) -> Vec<ContextItem> {
-        self.context.iter().filter(|c| c.agent_id == agent_id).cloned().collect()
+        self.context
+            .iter()
+            .filter(|c| c.agent_id == agent_id)
+            .cloned()
+            .collect()
     }
 
     fn append_event(&mut self, event: Event) {

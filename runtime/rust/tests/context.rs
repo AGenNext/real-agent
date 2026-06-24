@@ -26,7 +26,9 @@ fn active(rt: &mut Runtime<MemoryStore>) -> String {
 fn context_is_traceable_to_source() {
     let mut rt = Runtime::new(MemoryStore::new());
     let id = active(&mut rt);
-    let item = rt.observe(&id, "email", "customer reports failed export").unwrap();
+    let item = rt
+        .observe(&id, "email", "customer reports failed export")
+        .unwrap();
     assert_eq!(item.source, "email");
     let all = rt.context(&id);
     assert_eq!(all.len(), 1);
@@ -48,7 +50,10 @@ fn decision_is_grounded_in_observed_context() {
             "export",
             "low risk in window",
             0.95,
-            PolicyResult { decision: PolicyDecision::Allow, reason: "ok".into() },
+            PolicyResult {
+                decision: PolicyDecision::Allow,
+                reason: "ok".into(),
+            },
         )
         .unwrap();
     // The decision references exactly the context it was grounded in.

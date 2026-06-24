@@ -14,7 +14,12 @@ fn identity(id: &str) -> Identity {
 }
 
 fn agent(rt: &mut Runtime<MemoryStore>) -> String {
-    let a = rt.register_agent(identity("agent:a"), Objective::default(), vec![], Authority::default());
+    let a = rt.register_agent(
+        identity("agent:a"),
+        Objective::default(),
+        vec![],
+        Authority::default(),
+    );
     a.identity.id
 }
 
@@ -22,9 +27,27 @@ fn agent(rt: &mut Runtime<MemoryStore>) -> String {
 fn semantic_recall_ranks_by_cosine_similarity() {
     let mut rt = Runtime::new(MemoryStore::new());
     let id = agent(&mut rt);
-    rt.remember_semantic(&id, "billing export ok", vec![1.0, 0.0, 0.0], Classification::Internal).unwrap();
-    rt.remember_semantic(&id, "restore drill ok", vec![0.0, 1.0, 0.0], Classification::Internal).unwrap();
-    rt.remember_semantic(&id, "policy note", vec![0.0, 0.0, 1.0], Classification::Confidential).unwrap();
+    rt.remember_semantic(
+        &id,
+        "billing export ok",
+        vec![1.0, 0.0, 0.0],
+        Classification::Internal,
+    )
+    .unwrap();
+    rt.remember_semantic(
+        &id,
+        "restore drill ok",
+        vec![0.0, 1.0, 0.0],
+        Classification::Internal,
+    )
+    .unwrap();
+    rt.remember_semantic(
+        &id,
+        "policy note",
+        vec![0.0, 0.0, 1.0],
+        Classification::Confidential,
+    )
+    .unwrap();
 
     // Query closest to the "restore" vector.
     let hits = rt.recall_semantic(&id, &[0.1, 0.9, 0.0], 2);
@@ -36,14 +59,28 @@ fn semantic_recall_ranks_by_cosine_similarity() {
 #[test]
 fn recall_is_scoped_per_agent() {
     let mut rt = Runtime::new(MemoryStore::new());
-    let a = rt.register_agent(identity("agent:a"), Objective::default(), vec![], Authority::default());
-    let b = rt.register_agent(
-        Identity { id: "agent:b".into(), ..identity("agent:b") },
+    let a = rt.register_agent(
+        identity("agent:a"),
         Objective::default(),
         vec![],
         Authority::default(),
     );
-    rt.remember_semantic(&a.identity.id, "a-knowledge", vec![1.0, 0.0], Classification::Internal).unwrap();
+    let b = rt.register_agent(
+        Identity {
+            id: "agent:b".into(),
+            ..identity("agent:b")
+        },
+        Objective::default(),
+        vec![],
+        Authority::default(),
+    );
+    rt.remember_semantic(
+        &a.identity.id,
+        "a-knowledge",
+        vec![1.0, 0.0],
+        Classification::Internal,
+    )
+    .unwrap();
     let hits = rt.recall_semantic(&b.identity.id, &[1.0, 0.0], 5);
     assert!(hits.is_empty(), "agent b must not see agent a's memory");
 }
@@ -60,11 +97,17 @@ fn cosine_handles_degenerate_inputs() {
 fn procedural_and_working_memory_roundtrip() {
     let mut rt = Runtime::new(MemoryStore::new());
     let id = agent(&mut rt);
-    rt.remember_procedural(&id, ProceduralKind::Playbook, "nightly-backup", "1. export 2. verify").unwrap();
+    rt.remember_procedural(
+        &id,
+        ProceduralKind::Playbook,
+        "nightly-backup",
+        "1. export 2. verify",
+    )
+    .unwrap();
     assert_eq!(rt.procedural(&id).len(), 1);
     assert_eq!(rt.procedural(&id)[0].kind, ProceduralKind::Playbook);
 
-    rt.set_working(&id, "task-1", "step=2", 3600_000).unwrap();
+    rt.set_working(&id, "task-1", "step=2", 3_600_000).unwrap();
     let w = rt.get_working(&id, "task-1").unwrap();
     assert_eq!(w.state, "step=2");
     assert!(rt.get_working(&id, "missing").is_none());
