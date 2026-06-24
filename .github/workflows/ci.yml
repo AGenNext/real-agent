@@ -51,11 +51,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install SurrealDB
+        env:
+          # Pinned to the version the runtime is verified against (avoids drift).
+          SURREAL_VERSION: v3.0.1
         run: |
-          ver=$(curl -sSL https://api.github.com/repos/surrealdb/surrealdb/releases/latest \
-            | grep -o '"tag_name": *"[^"]*"' | head -1 | sed 's/.*"\(v[^"]*\)".*/\1/')
-          echo "Installing SurrealDB $ver"
-          curl -sSL "https://github.com/surrealdb/surrealdb/releases/download/${ver}/surreal-${ver}.linux-amd64.tgz" | tar xz
+          echo "Installing SurrealDB $SURREAL_VERSION"
+          curl -sSL "https://github.com/surrealdb/surrealdb/releases/download/${SURREAL_VERSION}/surreal-${SURREAL_VERSION}.linux-amd64.tgz" | tar xz
           sudo mv surreal /usr/local/bin/
           surreal version
       - name: Import runtime files
