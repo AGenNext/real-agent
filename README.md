@@ -115,6 +115,19 @@ Every pass through the loop must produce a decision record.
 
 This repository is an early canonical specification. It is intended to become a foundation for agent design, agent governance, agent evaluation, and agent runtime interoperability.
 
+## Ecosystem
+
+Real Agent is the **canonical definition + vendor-neutral runtime core + contract** within the broader [AGenNext](https://github.com/AGenNext) platform. It defines the model; other repositories build on or alongside it:
+
+- [Agent-MCPs](https://github.com/AGenNext/Agent-MCPs) — registry of MCP servers and integrations (the provider marketplace)
+- [Agent-Communication-Protocol](https://github.com/AGenNext/Agent-Communication-Protocol) — vendor-neutral agent orchestration protocol
+- [Agent-Context-Protocol](https://github.com/AGenNext/Agent-Context-Protocol) — context exchange between agents
+- [agent-console](https://github.com/AGenNext/agent-console) — operator console UI
+- [Agent-Runtime](https://github.com/AGenNext/Agent-Runtime) · [Agent-Platform](https://github.com/AGenNext/Agent-Platform) — runtime and platform surfaces
+- [Agent-Vocabulary](https://github.com/AGenNext/Agent-Vocabulary) · [Agent-Concepts](https://github.com/AGenNext/Agent-Concepts) — the definitional layer
+
+This repo deliberately stays in its lane: the model and the core. UIs, marketplaces, and orchestration live in their own repositories.
+
 ## License
 
 See [LICENSE](LICENSE).
