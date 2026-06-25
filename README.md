@@ -94,9 +94,13 @@ Every pass through the loop must produce a decision record.
 │   └── action.schema.json
 └── runtime/
     ├── rust/                      # vendor-neutral, zero-dependency runtime core
-    │   ├── src/{lib,model,store,runtime}.rs
-    │   ├── examples/agent_loop.rs
-    │   ├── tests/runtime.rs
+    │   ├── src/{lib,model,store,runtime,memory,security,context}.rs
+    │   ├── examples/{agent_loop,demo}.rs
+    │   ├── tests/*.rs
+    │   └── Cargo.toml
+    ├── rust-surrealdb/            # SurrealDB adapter implementing the core Store trait
+    │   ├── src/lib.rs
+    │   ├── tests/roundtrip.rs
     │   └── Cargo.toml
     └── surrealdb/
         ├── bootstrap.surql
