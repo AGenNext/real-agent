@@ -130,7 +130,7 @@ Real Agent is the **canonical definition + vendor-neutral runtime core + contrac
 - [Agent-Runtime](https://github.com/AGenNext/Agent-Runtime) · [Agent-Platform](https://github.com/AGenNext/Agent-Platform) — runtime and platform surfaces
 - [Agent-Vocabulary](https://github.com/AGenNext/Agent-Vocabulary) · [Agent-Concepts](https://github.com/AGenNext/Agent-Concepts) — the definitional layer
 
-This repo deliberately stays in its lane: the model and the core. UIs, marketplaces, and orchestration live in their own repositories.
+This repo deliberately stays in its lane: the model and the core. UIs, marketplaces, and orchestration live in their own repositories — and align with this one by satisfying [`CONFORMANCE.md`](CONFORMANCE.md), which defines what it means to be **Real Agent compatible** (levels C1–C4).
 
 ## License
 
