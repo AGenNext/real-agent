@@ -52,6 +52,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Protobuf lint + build (buf)
+        run: |
+          curl -sSL "https://github.com/bufbuild/buf/releases/download/v1.71.0/buf-Linux-x86_64" -o buf
+          chmod +x buf
+          ./buf --version
+          ./buf lint
+          ./buf build
       - name: Validate JSON Schemas and JSON-LD vocabulary
         run: |
           python3 - <<'PY'

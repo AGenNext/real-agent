@@ -275,7 +275,7 @@ message EvaluationRecord {
 // A system may implement the message contracts without implementing this service.
 service AgentService {
   rpc RegisterAgent(RegisterAgentRequest) returns (RegisterAgentResponse);
-  rpc GetAgentContract(GetAgentContractRequest) returns (AgentContract);
+  rpc GetAgentContract(GetAgentContractRequest) returns (GetAgentContractResponse);
   rpc RecordDecision(RecordDecisionRequest) returns (RecordDecisionResponse);
   rpc RecordAction(RecordActionRequest) returns (RecordActionResponse);
   rpc RecordOutcome(RecordOutcomeRequest) returns (RecordOutcomeResponse);
@@ -293,6 +293,10 @@ message RegisterAgentResponse {
 
 message GetAgentContractRequest {
   string agent_id = 1;
+}
+
+message GetAgentContractResponse {
+  AgentContract contract = 1;
 }
 
 message RecordDecisionRequest {
