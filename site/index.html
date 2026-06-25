@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Real Agent — the enterprise agent platform</title>
+    <meta
+      name="description"
+      content="Real Agent is the enterprise platform for governed, accountable AI agents: identity, authority, decision, action, memory, governance, security, and trust — one real-world model, multi-team."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="wrap nav__inner">
+        <a class="brand" href="#top">
+          <span class="brand__mark" aria-hidden="true"></span>
+          Real&nbsp;Agent
+        </a>
+        <nav class="nav__links" aria-label="Primary">
+          <a href="platform.html">Platform</a>
+          <a href="teams.html">Multi-team</a>
+          <a href="solutions.html">Solutions</a>
+          <a href="security.html">Security</a>
+          <a class="btn btn--ghost" href="https://github.com/AGenNext/real-agent">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- Hero -->
+      <section class="hero">
+        <div class="wrap hero__inner">
+          <p class="eyebrow">Enterprise agent platform</p>
+          <h1>Agents you can put in production — and be accountable for.</h1>
+          <p class="lede">
+            Most "agents" are a prompt, a workflow, or a tool wrapper. Real Agent is the
+            platform for <strong>governed digital workers</strong>: every agent has identity,
+            authority, objective, memory, and a decision record — under policy, security, and
+            trust your organization controls.
+          </p>
+          <div class="hero__cta">
+            <a class="btn btn--primary" href="#model">See the model</a>
+            <a class="btn btn--ghost" href="https://github.com/AGenNext/real-agent">Read the spec</a>
+          </div>
+          <p class="hero__formula">
+            Real Agent&nbsp;=&nbsp;Identity&nbsp;+&nbsp;Objective&nbsp;+&nbsp;Context&nbsp;+&nbsp;Decision&nbsp;+&nbsp;Action&nbsp;+&nbsp;Memory&nbsp;+&nbsp;Governance
+          </p>
+        </div>
+      </section>
+
+      <!-- Contrast -->
+      <section class="band">
+        <div class="wrap">
+          <h2>If it can't decide, act, remember, and be held accountable, it isn't an agent.</h2>
+          <div class="grid grid--3">
+            <div class="card card--muted"><h3>A prompt</h3><p>An LLM with instructions. No authority, no record, no accountability.</p></div>
+            <div class="card card--muted"><h3>A workflow</h3><p>Predetermined steps with tool calls. Automation, not agency.</p></div>
+            <div class="card card--muted"><h3>An advisor</h3><p>Recommends but cannot act, or acts with no governance. Not production-ready.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- The model: 12 primitives -->
+      <section id="model" class="section">
+        <div class="wrap">
+          <p class="eyebrow">One real-world model</p>
+          <h2>Twelve primitives. One coherent agent.</h2>
+          <p class="section__lede">
+            Agency is a graph, not a single object. Real Agent defines the canonical primitives
+            and how they relate — implementation-neutral, machine-readable.
+          </p>
+          <div class="grid grid--4">
+            <div class="card"><h3>Identity</h3><p>Who is acting.</p></div>
+            <div class="card"><h3>Authority</h3><p>What it is <em>allowed</em> to do — distinct from capability.</p></div>
+            <div class="card"><h3>Objective</h3><p>Why it is acting.</p></div>
+            <div class="card"><h3>Context</h3><p>What it knows now, traceable to source.</p></div>
+            <div class="card"><h3>Decision</h3><p>What it chose — the atomic, auditable unit.</p></div>
+            <div class="card"><h3>Action</h3><p>What it did, under authorization.</p></div>
+            <div class="card"><h3>Outcome</h3><p>What happened.</p></div>
+            <div class="card"><h3>Memory</h3><p>Semantic, episodic, procedural, working.</p></div>
+            <div class="card"><h3>Policy</h3><p>The rules that constrain it.</p></div>
+            <div class="card"><h3>Trust</h3><p>Measured confidence, continuously re-evaluated.</p></div>
+            <div class="card"><h3>Evaluation</h3><p>Evidence behind the trust.</p></div>
+            <div class="card"><h3>Governance</h3><p>Who is accountable.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- The loop -->
+      <section id="loop" class="band">
+        <div class="wrap">
+          <p class="eyebrow">The agent loop</p>
+          <h2>Every pass produces a decision record.</h2>
+          <ol class="loop">
+            <li><span>Observe</span></li>
+            <li><span>Decide</span></li>
+            <li><span>Authorize</span></li>
+            <li><span>Act</span></li>
+            <li><span>Evaluate</span></li>
+            <li><span>Remember</span></li>
+          </ol>
+          <p class="section__lede">
+            Decisions cause actions, actions produce outcomes, outcomes update trust, and
+            governance stays accountable for the whole chain — all on an append-only audit log.
+          </p>
+        </div>
+      </section>
+
+      <!-- Multi-team -->
+      <section id="teams" class="section">
+        <div class="wrap two-col">
+          <div>
+            <p class="eyebrow">Multi-team</p>
+            <h2>One platform, many teams — each governing its own agents.</h2>
+            <p class="section__lede">
+              Teams operate as isolated tenants. A single identity can carry across teams, while
+              authority, policy, data, and audit stay scoped to each. Onboard a department without
+              entangling it with the rest of the organization.
+            </p>
+            <ul class="ticks">
+              <li>Tenant isolation by namespace</li>
+              <li>Per-team authority &amp; policy boundaries</li>
+              <li>Portable identity across teams</li>
+              <li>Independent audit and trust per team</li>
+            </ul>
+          </div>
+          <div class="panel" aria-hidden="true">
+            <div class="panel__row"><span class="dot"></span> acme · billing-ops</div>
+            <div class="panel__row"><span class="dot"></span> acme · security</div>
+            <div class="panel__row"><span class="dot"></span> globex · data-platform</div>
+            <div class="panel__hint">Each team: its own agents, authority, audit, trust.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Governance / security / trust -->
+      <section id="govern" class="band">
+        <div class="wrap">
+          <p class="eyebrow">Enterprise controls</p>
+          <h2>Policy overrides intelligence.</h2>
+          <div class="grid grid--3">
+            <div class="card"><h3>Governance</h3><p>Governed lifecycle, approval gates, deny-by-default, and a kill switch. Accountability stays with a human owner.</p></div>
+            <div class="card"><h3>Security</h3><p>Authenticated principals, scoped access, data classification — enforced before any action runs.</p></div>
+            <div class="card"><h3>Trust</h3><p>Measured across six dimensions; autonomy lowers and agents suspend when trust drops.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <section class="cta">
+        <div class="wrap cta__inner">
+          <h2>Build agents that are real.</h2>
+          <p>Open specification, vendor-neutral runtime core, and a multi-model reference runtime.</p>
+          <div class="hero__cta">
+            <a class="btn btn--primary" href="https://github.com/AGenNext/real-agent">Get started on GitHub</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap foot__inner">
+        <span>Real Agent — the enterprise agent platform</span>
+        <span><a href="about.html">About</a> · <a href="solutions.html">Solutions</a> · <a href="https://github.com/AGenNext/real-agent">GitHub</a></span>
+      </div>
+    </footer>
+  </body>
+</html>

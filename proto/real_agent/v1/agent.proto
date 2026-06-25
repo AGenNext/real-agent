@@ -12,73 +12,10 @@ option go_package = "github.com/AGenNext/real-agent/gen/go/real_agent/v1;realage
 
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "real_agent/v1/common.proto";
 
-// LifecycleState defines the governed operating state of an agent.
-enum LifecycleState {
-  LIFECYCLE_STATE_UNSPECIFIED = 0;
-  LIFECYCLE_STATE_DRAFT = 1;
-  LIFECYCLE_STATE_REGISTERED = 2;
-  LIFECYCLE_STATE_APPROVED = 3;
-  LIFECYCLE_STATE_ACTIVE = 4;
-  LIFECYCLE_STATE_PAUSED = 5;
-  LIFECYCLE_STATE_SUSPENDED = 6;
-  LIFECYCLE_STATE_REVOKED = 7;
-  LIFECYCLE_STATE_RETIRED = 8;
-  LIFECYCLE_STATE_ARCHIVED = 9;
-}
-
-// RiskLevel defines the potential impact of a capability, decision, or action.
-enum RiskLevel {
-  RISK_LEVEL_UNSPECIFIED = 0;
-  RISK_LEVEL_LOW = 1;
-  RISK_LEVEL_MEDIUM = 2;
-  RISK_LEVEL_HIGH = 3;
-  RISK_LEVEL_CRITICAL = 4;
-}
-
-// PolicyDecision defines the result of policy evaluation.
-enum PolicyDecision {
-  POLICY_DECISION_UNSPECIFIED = 0;
-  POLICY_DECISION_ALLOW = 1;
-  POLICY_DECISION_DENY = 2;
-  POLICY_DECISION_REQUIRE_APPROVAL = 3;
-  POLICY_DECISION_REQUIRE_MORE_CONTEXT = 4;
-  POLICY_DECISION_ESCALATE = 5;
-}
-
-// ApprovalStatus defines the approval state for a decision or action.
-enum ApprovalStatus {
-  APPROVAL_STATUS_UNSPECIFIED = 0;
-  APPROVAL_STATUS_NOT_REQUIRED = 1;
-  APPROVAL_STATUS_PENDING = 2;
-  APPROVAL_STATUS_APPROVED = 3;
-  APPROVAL_STATUS_REJECTED = 4;
-  APPROVAL_STATUS_EXPIRED = 5;
-}
-
-// ActionStatus defines the execution status of an action.
-enum ActionStatus {
-  ACTION_STATUS_UNSPECIFIED = 0;
-  ACTION_STATUS_PENDING = 1;
-  ACTION_STATUS_QUEUED = 2;
-  ACTION_STATUS_RUNNING = 3;
-  ACTION_STATUS_COMPLETED = 4;
-  ACTION_STATUS_FAILED = 5;
-  ACTION_STATUS_CANCELLED = 6;
-  ACTION_STATUS_ROLLED_BACK = 7;
-}
-
-// TrustState defines the evaluated trust posture of an agent.
-enum TrustState {
-  TRUST_STATE_UNSPECIFIED = 0;
-  TRUST_STATE_UNKNOWN = 1;
-  TRUST_STATE_EXPERIMENTAL = 2;
-  TRUST_STATE_TRUSTED = 3;
-  TRUST_STATE_CONDITIONAL = 4;
-  TRUST_STATE_PROBATION = 5;
-  TRUST_STATE_SUSPENDED = 6;
-  TRUST_STATE_REVOKED = 7;
-}
+// Shared enums (LifecycleState, RiskLevel, PolicyDecision, ApprovalStatus,
+// ActionStatus, TrustState) are defined once in common.proto and imported here.
 
 // AgentContract is the canonical public contract of a real agent.
 message AgentContract {
@@ -92,6 +29,7 @@ message AgentContract {
   AgentEvaluation evaluation = 8;
   AgentObservability observability = 9;
   AgentTrust trust = 10;
+  AgentAuthority authority = 14;
   map<string, string> labels = 11;
   google.protobuf.Timestamp created_at = 12;
   google.protobuf.Timestamp updated_at = 13;
@@ -130,6 +68,21 @@ message Capability {
   RiskLevel risk_level = 6;
 }
 
+// AgentAuthority answers: what is the agent allowed to do?
+//
+// Authority is distinct from Capability. Capability is what the agent can do;
+// authority is what it is permitted to do. A capability without authority does
+// not imply permission.
+message AgentAuthority {
+  repeated string allowed_actions = 1;
+  repeated string denied_actions = 2;
+  repeated string data_access_scope = 3;
+  repeated string tool_access_scope = 4;
+  string financial_limit = 5;
+  repeated string operational_limits = 6;
+  repeated string escalation_requirements = 7;
+}
+
 // AgentAction declares an action the agent may request or perform.
 message AgentAction {
   string id = 1;
@@ -141,7 +94,36 @@ message AgentAction {
   RiskLevel risk_level = 7;
 }
 
-// AgentMemory declares how the agent may remember.
+// SemanticMemoryConfig surfaces the native semantic store: vector similarity
+// (MTREE) plus full-text recall, as realized in runtime/surrealdb/memory.surql.
+message SemanticMemoryConfig {
+  bool enabled = 1;
+  uint32 vector_dimension = 2;   // MTREE index dimension
+  string distance = 3;           // e.g. "COSINE", "EUCLIDEAN"
+  string embedding_model = 4;
+  bool full_text = 5;            // BM25 full-text index alongside vectors
+}
+
+// EpisodicMemoryConfig surfaces native change-feed time-travel over experience.
+message EpisodicMemoryConfig {
+  bool enabled = 1;
+  string change_feed_retention = 2;  // e.g. "30d"
+}
+
+// ProceduralMemoryConfig surfaces policy/playbook/routine/skill storage.
+message ProceduralMemoryConfig {
+  bool enabled = 1;
+}
+
+// WorkingMemoryConfig surfaces ephemeral current-task state.
+message WorkingMemoryConfig {
+  bool enabled = 1;
+  string ttl = 2;  // time-to-live for working state, e.g. "1h"
+}
+
+// AgentMemory declares how the agent may remember. The boolean fields remain
+// for minimal contracts; the *_config fields surface the native runtime
+// capabilities for each memory type.
 message AgentMemory {
   bool working = 1;
   bool episodic = 2;
@@ -149,6 +131,10 @@ message AgentMemory {
   bool procedural = 4;
   string retention_policy = 5;
   repeated string data_classifications = 6;
+  SemanticMemoryConfig semantic_config = 7;
+  EpisodicMemoryConfig episodic_config = 8;
+  ProceduralMemoryConfig procedural_config = 9;
+  WorkingMemoryConfig working_config = 10;
 }
 
 // AgentPolicy declares policy enforcement behavior.
@@ -289,7 +275,7 @@ message EvaluationRecord {
 // A system may implement the message contracts without implementing this service.
 service AgentService {
   rpc RegisterAgent(RegisterAgentRequest) returns (RegisterAgentResponse);
-  rpc GetAgentContract(GetAgentContractRequest) returns (AgentContract);
+  rpc GetAgentContract(GetAgentContractRequest) returns (GetAgentContractResponse);
   rpc RecordDecision(RecordDecisionRequest) returns (RecordDecisionResponse);
   rpc RecordAction(RecordActionRequest) returns (RecordActionResponse);
   rpc RecordOutcome(RecordOutcomeRequest) returns (RecordOutcomeResponse);
@@ -307,6 +293,10 @@ message RegisterAgentResponse {
 
 message GetAgentContractRequest {
   string agent_id = 1;
+}
+
+message GetAgentContractResponse {
+  AgentContract contract = 1;
 }
 
 message RecordDecisionRequest {

@@ -1,0 +1,15 @@
+[package]
+name = "real-agent-surrealdb"
+version = "0.1.0"
+edition = "2021"
+description = "SurrealDB adapter implementing the Real Agent core's Store trait. The vendor lives here, never in the core."
+license = "CC-BY-4.0"
+repository = "https://github.com/AGenNext/real-agent"
+
+# The vendor dependency (SurrealDB SDK) is isolated to this adapter crate.
+# The core (`real-agent-runtime`) stays zero-dependency.
+[dependencies]
+real-agent-runtime = { path = "../rust" }
+surrealdb = { version = "2", features = ["kv-mem"] }
+tokio = { version = "1", features = ["rt-multi-thread"] }
+serde_json = "1"

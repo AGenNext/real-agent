@@ -1,0 +1,26 @@
+---
+description: SurrealDB JavaScript/TypeScript SDK usage
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.mjs"]
+alwaysApply: false
+---
+
+# SurrealDB JavaScript / TypeScript SDK
+
+- Use the official `surrealdb` package (the old `surrealdb.js` name is deprecated).
+- Connect to the RPC endpoint, then select namespace/database, then sign in:
+  ```ts
+  import { Surreal } from "surrealdb";
+
+  const db = new Surreal();
+  await db.connect("http://127.0.0.1:8000/rpc");
+  await db.use({ namespace: "real_agent", database: "v1" });
+  await db.signin({ username: "root", password: "root" });
+
+  const result = await db.query("SELECT * FROM agent WHERE tenant = $t", { t: "acme" });
+  await db.close();
+  ```
+- Always pass variables as the second `query` argument; never string-concatenate
+  untrusted values into SurrealQL.
+- `db.query` returns an array, one entry per statement — index into it.
+- Use `db.live(table, cb)` / `LIVE SELECT` for real-time subscriptions instead of polling.
+- Close the connection (`db.close()`) when done; reuse one `Surreal` instance per app.

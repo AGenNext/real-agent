@@ -54,6 +54,15 @@ capabilities:
     output_schema: string
     risk_level: low | medium | high | critical
 
+authority:
+  allowed_actions: []
+  denied_actions: []
+  data_access_scope: []
+  tool_access_scope: []
+  financial_limit: string
+  operational_limits: []
+  escalation_requirements: []
+
 inputs:
   - type: string
     source: string
@@ -85,10 +94,11 @@ policy:
   deny_by_default: boolean
 
 security:
-  authn_required: boolean
-  authz_required: boolean
-  secret_access: []
-  data_classification: []
+  authentication_required: boolean
+  authorization_required: boolean
+  secret_refs: []
+  data_classifications: []
+  allowed_identity_providers: []
 
 evaluation:
   metrics: []
@@ -145,3 +155,24 @@ A valid contract should allow a human reviewer to answer:
 - how can it be suspended?
 
 If these cannot be answered from the contract, the agent is not ready for production.
+
+## Service interface
+
+The canonical vendor-facing service is `AgentService`, defined in
+`proto/real_agent/v1/agent.proto`. It is a **specification, not an
+implementation** — this repository defines the interface; vendors and runtimes
+implement it.
+
+```text
+RegisterAgent      (AgentContract)        -> agent_id, lifecycle_state
+GetAgentContract   (agent_id)             -> AgentContract
+RecordDecision     (DecisionRecord)       -> decision_id
+RecordAction       (ActionRecord)         -> action_id
+RecordOutcome      (OutcomeRecord)        -> outcome_id
+RecordEvaluation   (EvaluationRecord)     -> evaluation_id
+```
+
+Any system that exposes these methods over the canonical message contract — and
+preserves the governance the records imply — is Real Agent service-compatible
+(see `CONFORMANCE.md`, level C2 and above). Transport (gRPC, HTTP, in-process)
+is the implementer's choice; the message contract and behavior are fixed here.

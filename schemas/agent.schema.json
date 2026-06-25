@@ -94,7 +94,41 @@
         "episodic": { "type": "boolean" },
         "semantic": { "type": "boolean" },
         "procedural": { "type": "boolean" },
-        "retention_policy": { "type": "string" }
+        "retention_policy": { "type": "string" },
+        "semantic_config": {
+          "type": "object",
+          "description": "Native semantic store: vector similarity + full-text.",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "vector_dimension": { "type": "integer", "minimum": 1 },
+            "distance": { "type": "string" },
+            "embedding_model": { "type": "string" },
+            "full_text": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "episodic_config": {
+          "type": "object",
+          "description": "Native change-feed time-travel over experience.",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "change_feed_retention": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "procedural_config": {
+          "type": "object",
+          "properties": { "enabled": { "type": "boolean" } },
+          "additionalProperties": false
+        },
+        "working_config": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "ttl": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
       },
       "additionalProperties": false
     },
@@ -105,6 +139,58 @@
         "metrics": { "type": "array", "items": { "type": "string" } },
         "test_suite": { "type": "string" },
         "minimum_trust_score": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "authority": {
+      "type": "object",
+      "description": "What the agent is permitted to do, distinct from what it is capable of.",
+      "properties": {
+        "allowed_actions": { "type": "array", "items": { "type": "string" } },
+        "denied_actions": { "type": "array", "items": { "type": "string" } },
+        "data_access_scope": { "type": "array", "items": { "type": "string" } },
+        "tool_access_scope": { "type": "array", "items": { "type": "string" } },
+        "financial_limit": { "type": "string" },
+        "operational_limits": { "type": "array", "items": { "type": "string" } },
+        "escalation_requirements": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "security": {
+      "type": "object",
+      "properties": {
+        "authentication_required": { "type": "boolean" },
+        "authorization_required": { "type": "boolean" },
+        "secret_refs": { "type": "array", "items": { "type": "string" } },
+        "data_classifications": { "type": "array", "items": { "type": "string" } },
+        "allowed_identity_providers": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "observability": {
+      "type": "object",
+      "properties": {
+        "traces": { "type": "boolean" },
+        "logs": { "type": "boolean" },
+        "metrics": { "type": "boolean" },
+        "audit": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "trust": {
+      "type": "object",
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "state": {
+          "type": "string",
+          "enum": ["unknown", "experimental", "trusted", "conditional", "probation", "suspended", "revoked"]
+        },
+        "identity_trust": { "type": "number", "minimum": 0, "maximum": 1 },
+        "capability_trust": { "type": "number", "minimum": 0, "maximum": 1 },
+        "policy_trust": { "type": "number", "minimum": 0, "maximum": 1 },
+        "behavioral_trust": { "type": "number", "minimum": 0, "maximum": 1 },
+        "operational_trust": { "type": "number", "minimum": 0, "maximum": 1 },
+        "outcome_trust": { "type": "number", "minimum": 0, "maximum": 1 }
       },
       "additionalProperties": false
     }

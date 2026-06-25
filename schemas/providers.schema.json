@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://real-agent.dev/schemas/providers.schema.json",
+  "title": "Real Agent Providers",
+  "description": "Default, configurable providers for the runtime's pluggable slots (ports). Built-in defaults are declared here; the full provider catalog is supplied by the marketplace and is out of scope for this file.",
+  "type": "object",
+  "required": ["store", "identity", "policy"],
+  "properties": {
+    "store": {
+      "type": "object",
+      "description": "Persistence provider implementing the core Store port.",
+      "required": ["provider"],
+      "properties": {
+        "provider": { "type": "string", "enum": ["memory", "surrealdb"], "default": "memory" },
+        "surrealdb": {
+          "type": "object",
+          "properties": {
+            "endpoint": { "type": "string" },
+            "namespace": { "type": "string" },
+            "database": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "identity": {
+      "type": "object",
+      "description": "Authentication provider for principals.",
+      "required": ["provider"],
+      "properties": {
+        "provider": { "type": "string", "enum": ["none", "oidc", "saml"], "default": "none" },
+        "oidc": {
+          "type": "object",
+          "properties": {
+            "issuer": { "type": "string" },
+            "client_id": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "saml": {
+          "type": "object",
+          "properties": { "metadata_url": { "type": "string" } },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "embedding": {
+      "type": "object",
+      "description": "Embedding provider for semantic memory; dimension must match the store's vector index.",
+      "properties": {
+        "provider": { "type": "string", "enum": ["none", "openai", "local"], "default": "none" },
+        "model": { "type": "string" },
+        "dimension": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "description": "Policy engine provider. The builtin engine is deny-by-default.",
+      "required": ["provider"],
+      "properties": {
+        "provider": { "type": "string", "enum": ["builtin", "external"], "default": "builtin" },
+        "deny_by_default": { "type": "boolean", "default": true },
+        "endpoint": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main, claude/relaxed-pasteur-1u4q1]
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege: CI only reads the repo.
+permissions:
+  contents: read
+
+jobs:
+  rust-core:
+    name: Rust runtime core
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: runtime/rust
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: rustup component add rustfmt clippy
+      - name: Format
+        run: cargo fmt --check
+      - name: Clippy (deny warnings)
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Test
+        run: cargo test
+      - name: Example runs
+        run: cargo run --example agent_loop
+
+  surrealdb-adapter:
+    name: SurrealDB adapter
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: runtime/rust-surrealdb
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: rustup component add rustfmt clippy
+      - name: Format
+        run: cargo fmt --check
+      - name: Clippy (deny warnings)
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Test (round-trips the agent loop through embedded SurrealDB)
+        run: cargo test
+
+  contracts:
+    name: Contract & vocabulary validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Protobuf lint + build (buf)
+        run: |
+          curl -sSL "https://github.com/bufbuild/buf/releases/download/v1.71.0/buf-Linux-x86_64" -o buf
+          chmod +x buf
+          ./buf --version
+          ./buf lint
+          ./buf build
+      - name: Validate JSON Schemas and JSON-LD vocabulary
+        run: |
+          python3 - <<'PY'
+          import json, glob
+          files = glob.glob("schemas/*.json") + glob.glob("config/*.json") + ["vocab/real-agent.jsonld"]
+          for f in files:
+              json.load(open(f))
+              print("ok", f)
+          PY
+
+  surrealdb-runtime:
+    name: SurrealDB runtime (import on 3.x)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SurrealDB
+        env:
+          # Pinned to the version the runtime is verified against (avoids drift).
+          SURREAL_VERSION: v3.0.1
+        run: |
+          echo "Installing SurrealDB $SURREAL_VERSION"
+          curl -sSL "https://github.com/surrealdb/surrealdb/releases/download/${SURREAL_VERSION}/surreal-${SURREAL_VERSION}.linux-amd64.tgz" | tar xz
+          sudo mv surreal /usr/local/bin/
+          surreal version
+      - name: Import runtime files
+        run: |
+          surreal start --user root --pass root memory --bind 127.0.0.1:8000 &
+          sleep 6
+          for f in bootstrap schema tools memory register functions; do
+            echo "== import $f.surql =="
+            surreal import --endpoint http://127.0.0.1:8000 --user root --pass root \
+              --ns real_agent --db v1 "runtime/surrealdb/$f.surql"
+          done

@@ -1,0 +1,54 @@
+---
+description: SurrealQL conventions for the Real Agent SurrealDB runtime
+globs: ["runtime/surrealdb/**/*.surql", "**/*.surql"]
+alwaysApply: true
+---
+
+# SurrealQL conventions (SurrealDB 3.x)
+
+Write SurrealQL that matches how SurrealDB 3.x actually behaves. These rules are
+verified against the runtime in `runtime/surrealdb/` on SurrealDB 3.0.1.
+
+## Schema definition
+- Prefer `DEFINE TABLE <t> SCHEMAFULL` for governed records; use `SCHEMALESS`
+  only for genuinely open payloads.
+- Define every field: `DEFINE FIELD <name> ON <table> TYPE <type>`.
+- Use the real type system: `option<T>` for nullable, `array<T>`, `record<other>`
+  for links, `object`, `datetime`, `number`, `bool`, `string`, `array<float>`.
+- For an intentionally open nested object, put `FLEXIBLE` AFTER the type:
+  `DEFINE FIELD meta ON t TYPE option<object> FLEXIBLE;` (3.x requires this order).
+- Make definitions idempotent with `IF NOT EXISTS` (e.g. in migrations).
+- Enforce enums with `ASSERT $value IN [...]` (SurrealQL has no native enum).
+- Use flat-namespaced validators: `string::is_email(...)`, not the old
+  `string::is::email(...)` (removed in 3.x).
+- Defaults and computed values: `DEFAULT time::now()`, `VALUE time::now()`,
+  `READONLY` for immutable fields.
+
+## Record IDs and links
+- IDs are `table:id`. Quote non-simple ids with backticks: `` _migration:`0001_x` ``.
+- Reference other records with `record<table>` fields, not raw strings.
+
+## Graph
+- Create edges with `RELATE a->edge->b SET ...`.
+- Define edge tables as `DEFINE TABLE <edge> TYPE RELATION FROM <a> TO <b>`.
+- Traverse with arrows: `SELECT ->authorized_for->tool.name AS tools FROM agent:x`.
+
+## Transactions and events
+- Wrap multi-statement mutations in `BEGIN TRANSACTION; ... COMMIT TRANSACTION;`.
+- Triggers: `DEFINE EVENT <e> ON TABLE <t> WHEN $event = "CREATE" THEN { ... };`
+  use `$event`, `$before`, `$after`, `$value` inside the body.
+
+## Access control (v2)
+- Use `DEFINE ACCESS <name> ON DATABASE TYPE RECORD` with `SIGNUP`/`SIGNIN`.
+  Do NOT use the removed `DEFINE SCOPE` / `DEFINE TOKEN` v1 syntax.
+- Gate tables/fields with `PERMISSIONS FOR select|create|update|delete ...`.
+- Hash secrets with `crypto::argon2::generate` / compare with `crypto::argon2::compare`.
+
+## CLI (3.x)
+- The `surreal import` / `surreal sql` connection flag is `--endpoint` (or `-e`),
+  not the 2.x `--conn`.
+
+## Don't
+- Don't invent functions or operators; if unsure, check the SurrealQL reference.
+- Don't store timestamps as strings — use `datetime` and `time::now()`.
+- Don't redefine the same enum/type in two files in the same package/namespace.

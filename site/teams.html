@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Multi-team — Real Agent</title>
+    <meta name="description" content="Real Agent is multi-team by design: teams as isolated tenants, portable identity across teams, and a federation layer between agents." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="wrap nav__inner">
+        <a class="brand" href="index.html"><span class="brand__mark" aria-hidden="true"></span> Real&nbsp;Agent</a>
+        <nav class="nav__links" aria-label="Primary">
+          <a href="platform.html">Platform</a>
+          <a href="teams.html">Multi-team</a>
+          <a href="solutions.html">Solutions</a>
+          <a href="security.html">Security</a>
+          <a class="btn btn--ghost" href="https://github.com/AGenNext/real-agent">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="subhero">
+        <div class="wrap">
+          <p class="eyebrow">Multi-team</p>
+          <h1>One platform. Many teams. Each governs its own agents.</h1>
+          <p class="lede">Onboard a department without entangling it with the rest of the organization — isolated, yet able to collaborate.</p>
+        </div>
+      </section>
+
+      <section class="prose">
+        <div class="wrap two-col">
+          <div>
+            <p class="eyebrow">Tenancy</p>
+            <h2>Isolation by default.</h2>
+            <p class="measure">Each team operates as a tenant. Authority, policy, data, audit, and trust are scoped to the team — a misconfigured agent in one team can't reach another's resources.</p>
+            <ul class="ticks">
+              <li>Namespace-level isolation per team</li>
+              <li>Independent authority &amp; policy boundaries</li>
+              <li>Separate audit log and trust per team</li>
+              <li>No implicit cross-team access</li>
+            </ul>
+          </div>
+          <div class="panel" aria-hidden="true">
+            <div class="panel__row"><span class="dot"></span> acme · billing-ops</div>
+            <div class="panel__row"><span class="dot"></span> acme · security</div>
+            <div class="panel__row"><span class="dot"></span> globex · data-platform</div>
+            <div class="panel__hint">Each team: its own agents, authority, audit, trust.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="wrap">
+          <p class="eyebrow">Identity</p>
+          <h2>Portable identity, nomadic by design.</h2>
+          <p class="section__lede measure">A single identity can carry across teams without copying it into each one — inspired by nomadic-identity systems. You stay you; your authority is granted, per team, where it's needed.</p>
+        </div>
+      </section>
+
+      <section class="prose">
+        <div class="wrap">
+          <p class="eyebrow">Federation</p>
+          <h2>A network between agents.</h2>
+          <p class="kicker">Agents don't operate in isolation. The platform models the relationships between them — delegation, hand-off, and shared context — so an agent network can form across teams while governance stays intact.</p>
+          <div class="grid grid--3">
+            <div class="card"><h3>Delegate</h3><p>An agent hands a sub-task to another, carrying authority and audit with it.</p></div>
+            <div class="card"><h3>Relate</h3><p>Typed relationships connect agents, tools, decisions, and outcomes as one graph.</p></div>
+            <div class="card"><h3>Govern</h3><p>Every cross-agent interaction is still policy-checked and logged.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta">
+        <div class="wrap cta__inner">
+          <h2>Built for organizations, not demos.</h2>
+          <div class="hero__cta"><a class="btn btn--primary" href="https://github.com/AGenNext/real-agent">Explore the model</a></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap foot__inner">
+        <span>Real Agent — the enterprise agent platform</span>
+        <span><a href="about.html">About</a> · <a href="solutions.html">Solutions</a> · <a href="https://github.com/AGenNext/real-agent">GitHub</a></span>
+      </div>
+    </footer>
+  </body>
+</html>

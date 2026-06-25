@@ -76,26 +76,64 @@ Every pass through the loop must produce a decision record.
 .
 ├── README.md
 ├── SPEC.md
+├── ONTOLOGY.md
 ├── CONTRACT.md
 ├── GOVERNANCE.md
 ├── LIFECYCLE.md
-├── SECURITY.md
+├── TRUST.md
+├── LICENSE
+├── buf.yaml
+├── buf.gen.yaml
+├── proto/
+│   └── real_agent/v1/
+│       ├── agent.proto
+│       └── common.proto
 ├── schemas/
 │   ├── agent.schema.json
 │   ├── decision.schema.json
 │   └── action.schema.json
-├── examples/
-│   ├── minimal-agent.json
-│   └── enterprise-agent.json
-└── docs/
-    ├── architecture.md
-    ├── glossary.md
-    └── evaluation.md
+└── runtime/
+    ├── rust/                      # vendor-neutral, zero-dependency runtime core
+    │   ├── src/{lib,model,store,runtime,memory,security,context}.rs
+    │   ├── examples/{agent_loop,demo}.rs
+    │   ├── tests/*.rs
+    │   └── Cargo.toml
+    ├── rust-surrealdb/            # SurrealDB adapter implementing the core Store trait
+    │   ├── src/lib.rs
+    │   ├── tests/roundtrip.rs
+    │   └── Cargo.toml
+    └── surrealdb/
+        ├── bootstrap.surql
+        ├── schema.surql
+        ├── tools.surql
+        ├── memory.surql
+        ├── register.surql
+        ├── functions.surql
+        ├── migrations/
+        │   ├── 0001_agent_tags.surql
+        │   └── README.md
+        └── README.md
 ```
 
 ## Status
 
 This repository is an early canonical specification. It is intended to become a foundation for agent design, agent governance, agent evaluation, and agent runtime interoperability.
+
+## Ecosystem
+
+Real Agent is the **specification** within the broader [AGenNext](https://github.com/AGenNext) platform — the model, the contract, the `AgentService` interface, and conformance levels. It defines *what* a real agent is; the agents themselves, and the surfaces around them, are **built in other repositories** that conform to this spec:
+
+- [Agent-Platform](https://github.com/AGenNext/Agent-Platform) — where the agents are built (conforming to this spec)
+- [Agent-MCPs](https://github.com/AGenNext/Agent-MCPs) — registry of MCP servers and integrations (the provider marketplace)
+- [Agent-Communication-Protocol](https://github.com/AGenNext/Agent-Communication-Protocol) — vendor-neutral agent orchestration protocol
+- [Agent-Context-Protocol](https://github.com/AGenNext/Agent-Context-Protocol) — context exchange between agents
+- [agent-console](https://github.com/AGenNext/agent-console) — operator console UI
+- [Agent-Runtime](https://github.com/AGenNext/Agent-Runtime) — a runtime surface
+- [Agent-Vocabulary](https://github.com/AGenNext/Agent-Vocabulary) · [Agent-Concepts](https://github.com/AGenNext/Agent-Concepts) — the definitional layer
+
+The `runtime/` directory here is a **non-normative reference** implementation — proof the spec is buildable and verifiable, not the product. Vendors need only satisfy [`CONFORMANCE.md`](CONFORMANCE.md), not use this code.
+
+This repo deliberately stays in its lane: the model and the core. UIs, marketplaces, and orchestration live in their own repositories — and align with this one by satisfying [`CONFORMANCE.md`](CONFORMANCE.md), which defines what it means to be **Real Agent compatible** (levels C1–C4).
 
 ## License
 

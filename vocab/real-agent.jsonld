@@ -1,0 +1,57 @@
+{
+  "@context": {
+    "@vocab": "https://real-agent.dev/vocab#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "schema": "https://schema.org/",
+    "label": "rdfs:label",
+    "question": "rdfs:comment",
+    "role": "schema:description",
+    "domain": { "@id": "schema:domainIncludes", "@type": "@id" },
+    "range": { "@id": "schema:rangeIncludes", "@type": "@id" }
+  },
+  "@graph": [
+    {
+      "@id": "Agent",
+      "@type": "rdfs:Class",
+      "label": "Agent",
+      "role": "The accountable actor that carries agency within the graph."
+    },
+
+    { "@id": "Identity",   "@type": "rdfs:Class", "label": "Identity",   "question": "Who is acting?",                 "role": "Establishes a stable actor identity." },
+    { "@id": "Authority",  "@type": "rdfs:Class", "label": "Authority",  "question": "What is it permitted to do?",    "role": "Defines the granted operating boundary." },
+    { "@id": "Objective",  "@type": "rdfs:Class", "label": "Objective",  "question": "Why is it acting?",              "role": "Defines purpose and desired state." },
+    { "@id": "Context",    "@type": "rdfs:Class", "label": "Context",    "question": "What does it know now?",         "role": "Provides situational awareness; traceable to source." },
+    { "@id": "Decision",   "@type": "rdfs:Class", "label": "Decision",   "question": "What did it choose?",            "role": "Captures agency; the atomic accountable unit." },
+    { "@id": "Action",     "@type": "rdfs:Class", "label": "Action",     "question": "What did it do?",                "role": "Changes or requests change in the world." },
+    { "@id": "Outcome",    "@type": "rdfs:Class", "label": "Outcome",    "question": "What happened?",                 "role": "Captures the consequence of an action." },
+    { "@id": "Memory",     "@type": "rdfs:Class", "label": "Memory",     "question": "What was retained?",             "role": "Preserves experience and knowledge." },
+    { "@id": "Policy",     "@type": "rdfs:Class", "label": "Policy",     "question": "What rules constrain it?",       "role": "Enforces allowed and denied behavior." },
+    { "@id": "Trust",      "@type": "rdfs:Class", "label": "Trust",      "question": "How much confidence is justified?", "role": "Measures reliability and safety; contextual." },
+    { "@id": "Evaluation", "@type": "rdfs:Class", "label": "Evaluation", "question": "How was it measured?",           "role": "Produces evidence for trust." },
+    { "@id": "Governance", "@type": "rdfs:Class", "label": "Governance", "question": "Who is accountable?",            "role": "Defines control, review, and accountability." },
+
+    { "@id": "hasIdentity",     "@type": "rdf:Property", "domain": "Agent",      "range": "Identity" },
+    { "@id": "hasAuthority",    "@type": "rdf:Property", "domain": "Agent",      "range": "Authority" },
+    { "@id": "pursuesObjective","@type": "rdf:Property", "domain": "Agent",      "range": "Objective" },
+    { "@id": "observesContext", "@type": "rdf:Property", "domain": "Agent",      "range": "Context" },
+    { "@id": "makesDecision",   "@type": "rdf:Property", "domain": "Agent",      "range": "Decision" },
+    { "@id": "decisionUsesContext", "@type": "rdf:Property", "domain": "Decision", "range": "Context", "label": "grounded in" },
+    { "@id": "causes",          "@type": "rdf:Property", "domain": "Decision",   "range": "Action" },
+    { "@id": "produces",        "@type": "rdf:Property", "domain": "Action",     "range": "Outcome" },
+    { "@id": "requiresAuthority","@type": "rdf:Property","domain": "Action",     "range": "Authority", "label": "requires authority before acting" },
+    { "@id": "updatesMemory",   "@type": "rdf:Property", "domain": "Outcome",    "range": "Memory" },
+    { "@id": "feeds",           "@type": "rdf:Property", "domain": "Outcome",    "range": "Evaluation" },
+    { "@id": "updatesTrust",    "@type": "rdf:Property", "domain": "Evaluation", "range": "Trust" },
+    { "@id": "constrains",      "@type": "rdf:Property", "domain": "Policy",     "range": "Decision" },
+    { "@id": "authorizesOrDenies", "@type": "rdf:Property", "domain": "Policy",  "range": "Action" },
+    { "@id": "controlsLifecycle","@type": "rdf:Property", "domain": "Governance","range": "Agent" },
+
+    {
+      "@id": "CausalChain",
+      "@type": "rdfs:Class",
+      "label": "Causal chain",
+      "role": "Objective -> Context -> Decision -> Action -> Outcome -> Evaluation -> Trust -> Governance adjustment."
+    }
+  ]
+}

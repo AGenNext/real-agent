@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Platform — Real Agent</title>
+    <meta name="description" content="The Real Agent platform: one real-world model of agency, a vendor-neutral runtime core, and a machine-readable contract." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="wrap nav__inner">
+        <a class="brand" href="index.html"><span class="brand__mark" aria-hidden="true"></span> Real&nbsp;Agent</a>
+        <nav class="nav__links" aria-label="Primary">
+          <a href="platform.html">Platform</a>
+          <a href="teams.html">Multi-team</a>
+          <a href="solutions.html">Solutions</a>
+          <a href="security.html">Security</a>
+          <a class="btn btn--ghost" href="https://github.com/AGenNext/real-agent">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="subhero">
+        <div class="wrap">
+          <p class="eyebrow">Platform</p>
+          <h1>One model of agency. Implemented, not just described.</h1>
+          <p class="lede">A real agent is a graph of twelve primitives bound into one accountable loop — and a runtime that enforces it.</p>
+        </div>
+      </section>
+
+      <section class="prose">
+        <div class="wrap">
+          <p class="eyebrow">The model</p>
+          <h2>Twelve primitives</h2>
+          <p class="kicker">Each answers one question. Drop any and you have a tool, a workflow, or an advisor — not an agent.</p>
+          <div class="grid grid--4">
+            <div class="card"><h3>Identity</h3><p>Who is acting.</p></div>
+            <div class="card"><h3>Authority</h3><p>What it's allowed to do.</p></div>
+            <div class="card"><h3>Objective</h3><p>Why it's acting.</p></div>
+            <div class="card"><h3>Context</h3><p>What it knows now.</p></div>
+            <div class="card"><h3>Decision</h3><p>What it chose.</p></div>
+            <div class="card"><h3>Action</h3><p>What it did.</p></div>
+            <div class="card"><h3>Outcome</h3><p>What happened.</p></div>
+            <div class="card"><h3>Memory</h3><p>What it retained.</p></div>
+            <div class="card"><h3>Policy</h3><p>What constrains it.</p></div>
+            <div class="card"><h3>Trust</h3><p>How much confidence is justified.</p></div>
+            <div class="card"><h3>Evaluation</h3><p>How it's measured.</p></div>
+            <div class="card"><h3>Governance</h3><p>Who is accountable.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="wrap">
+          <p class="eyebrow">The loop</p>
+          <h2>Every pass produces a decision record.</h2>
+          <ol class="loop">
+            <li><span>Observe</span></li><li><span>Decide</span></li><li><span>Authorize</span></li>
+            <li><span>Act</span></li><li><span>Evaluate</span></li><li><span>Remember</span></li>
+          </ol>
+          <p class="section__lede">Objective → Context → Decision → Action → Outcome → Evaluation → Trust → Governance adjustment. The chain is append-only and auditable end to end.</p>
+        </div>
+      </section>
+
+      <section class="prose">
+        <div class="wrap">
+          <p class="eyebrow">Architecture</p>
+          <h2>Vendor-neutral core, pluggable everything else.</h2>
+          <div class="pillar"><h3>Runtime core</h3><p>A dependency-free implementation of the contract — no SBOM/supply-chain surface. Governs lifecycle, authority, policy, approval, security, and trust.</p></div>
+          <div class="pillar"><h3>Store port</h3><p>One trait. SurrealDB, or any database, plugs in as an adapter — the core never names a vendor.</p></div>
+          <div class="pillar"><h3>Contract</h3><p>The model as Protobuf, JSON Schema, and a JSON-LD vocabulary — machine-readable and language-neutral.</p></div>
+          <div class="pillar"><h3>Reference runtime</h3><p>A SurrealDB runtime mapping the model onto graph, vector, full-text, and change-feed in one engine.</p></div>
+        </div>
+      </section>
+
+      <section class="cta">
+        <div class="wrap cta__inner">
+          <h2>Read the spec, run the core.</h2>
+          <p>Open specification. Vendor-neutral runtime. Verifiable.</p>
+          <div class="hero__cta"><a class="btn btn--primary" href="https://github.com/AGenNext/real-agent">View on GitHub</a></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap foot__inner">
+        <span>Real Agent — the enterprise agent platform</span>
+        <span><a href="about.html">About</a> · <a href="solutions.html">Solutions</a> · <a href="https://github.com/AGenNext/real-agent">GitHub</a></span>
+      </div>
+    </footer>
+  </body>
+</html>

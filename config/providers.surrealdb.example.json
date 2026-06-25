@@ -1,0 +1,16 @@
+{
+  "store": {
+    "provider": "surrealdb",
+    "surrealdb": {
+      "endpoint": "ws://localhost:8000",
+      "namespace": "real_agent",
+      "database": "v1"
+    }
+  },
+  "identity": {
+    "provider": "oidc",
+    "oidc": { "issuer": "https://issuer.example", "client_id": "real-agent" }
+  },
+  "embedding": { "provider": "local", "model": "all-MiniLM-L6-v2", "dimension": 384 },
+  "policy": { "provider": "builtin", "deny_by_default": true }
+}

@@ -1,0 +1,6 @@
+{
+  "store": { "provider": "memory" },
+  "identity": { "provider": "none" },
+  "embedding": { "provider": "none" },
+  "policy": { "provider": "builtin", "deny_by_default": true }
+}
